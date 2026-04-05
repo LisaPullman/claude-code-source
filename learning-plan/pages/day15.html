@@ -9,14 +9,436 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/services/lsp/LSPClient.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { type ChildProcess, spawn } from 'child_process'
+import {
+  createMessageConnection,
+  type MessageConnection,
+  StreamMessageReader,
+  StreamMessageWriter,
+  Trace,
+} from 'vscode-jsonrpc/node.js'
+import type {
+  InitializeParams,
+  InitializeResult,
+  ServerCapabilities,
+} from 'vscode-languageserver-protocol'
+import { logForDebugging } from '../../utils/debug.js'
+import { errorMessage } from '../../utils/errors.js'
+import { logError } from '../../utils/log.js'
+import { subprocessEnv } from '../../utils/subprocessEnv.js'
+/**
+ * LSP client interface.
+ */
+export type LSPClient = {
+  readonly capabilities: ServerCapabilities | undefined
+  readonly isInitialized: boolean
+  start: (
+    command: string,
+    args: string[],
+    options?: {
+      env?: Record<string, string>
+      cwd?: string
+    },
+  ) => Promise<void>
+  initialize: (params: InitializeParams) => Promise<InitializeResult>
+  sendRequest: <TResult>(method: string, params: unknown) => Promise<TResult>
+  sendNotification: (method: string, params: unknown) => Promise<void>
+  onNotification: (method: string, handler: (params: unknown) => void) => void
+  onRequest: <TParams, TResult>(
+    method: string,
+    handler: (params: TParams) => TResult | Promise<TResult>,
+  ) => void
+  stop: () => Promise<void>
+}
+
+/**
+ * Create an LSP client wrapper using vscode-jsonrpc.
+ * Manages communication with an LSP server process via stdio.
+ *
+ * @param onCrash - Called when the server process exits unexpectedly (non-zero
+ *   exit code during operation, not during intentional stop). Allows the owner
+ *   to propagate crash state so the server can be restarted on next use.
+ */
+export function createLSPClient(
+  serverName: string,
+  onCrash?: (error: Error) => void,
+): LSPClient {
+  // State variables in closure
+  let process: ChildProcess | undefined
+  let connection: MessageConnection | undefined
+  let capabilities: ServerCapabilities | undefined
+  let isInitialized = false
+  let startFailed = false
+  let startError: Error | undefined
+  let isStopping = false // Track intentional shutdown to avoid spurious error logging
+  // Queue handlers registered before connection ready (lazy initialization support)
+  const pendingHandlers: Array<{
+    method: string
+    handler: (params: unknown) => void
+  }> = []
+  const pendingRequestHandlers: Array<{
+    method: string
+    handler: (params: unknown) => unknown | Promise<unknown>
+  }> = []
+
+  function checkStartFailed(): void {
+    if (startFailed) {
+      throw startError || new Error(\`LSP server \${serverName} failed to start\`)
+    }
+  }
+
+  return {
+    get capabilities(): ServerCapabilities | undefined {
+      return capabilities
+    },
+
+    get isInitialized(): boolean {
+      return isInitialized
+    },
+
+    async start(
+      command: string,
+      args: string[],
+
+// ... 已截断（共 448 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/services/lsp/LSPServerManager.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import * as path from 'path'
+import { pathToFileURL } from 'url'
+import { logForDebugging } from '../../utils/debug.js'
+import { errorMessage } from '../../utils/errors.js'
+import { logError } from '../../utils/log.js'
+import { getAllLspServers } from './config.js'
+import {
+  createLSPServerInstance,
+  type LSPServerInstance,
+} from './LSPServerInstance.js'
+import type { ScopedLspServerConfig } from './types.js'
+/**
+ * LSP Server Manager interface returned by createLSPServerManager.
+ * Manages multiple LSP server instances and routes requests based on file extensions.
+ */
+export type LSPServerManager = {
+  /** Initialize the manager by loading all configured LSP servers */
+  initialize(): Promise<void>
+  /** Shutdown all running servers and clear state */
+  shutdown(): Promise<void>
+  /** Get the LSP server instance for a given file path */
+  getServerForFile(filePath: string): LSPServerInstance | undefined
+  /** Ensure the appropriate LSP server is started for the given file */
+  ensureServerStarted(filePath: string): Promise<LSPServerInstance | undefined>
+  /** Send a request to the appropriate LSP server for the given file */
+  sendRequest<T>(
+    filePath: string,
+    method: string,
+    params: unknown,
+  ): Promise<T | undefined>
+  /** Get all running server instances */
+  getAllServers(): Map<string, LSPServerInstance>
+  /** Synchronize file open to LSP server (sends didOpen notification) */
+  openFile(filePath: string, content: string): Promise<void>
+  /** Synchronize file change to LSP server (sends didChange notification) */
+  changeFile(filePath: string, content: string): Promise<void>
+  /** Synchronize file save to LSP server (sends didSave notification) */
+  saveFile(filePath: string): Promise<void>
+  /** Synchronize file close to LSP server (sends didClose notification) */
+  closeFile(filePath: string): Promise<void>
+  /** Check if a file is already open on a compatible LSP server */
+  isFileOpen(filePath: string): boolean
+}
+
+/**
+ * Creates an LSP server manager instance.
+ *
+ * Manages multiple LSP server instances and routes requests based on file extensions.
+ * Uses factory function pattern with closures for state encapsulation (avoiding classes).
+ *
+ * @returns LSP server manager instance
+ *
+ * @example
+ * const manager = createLSPServerManager()
+ * await manager.initialize()
+ * const result = await manager.sendRequest('/path/to/file.ts', 'textDocument/definition', params)
+ * await manager.shutdown()
+ */
+export function createLSPServerManager(): LSPServerManager {
+  // Private state managed via closures
+  const servers: Map<string, LSPServerInstance> = new Map()
+  const extensionMap: Map<string, string[]> = new Map()
+  // Track which files have been opened on which servers (URI -> server name)
+  const openedFiles: Map<string, string> = new Map()
+
+  /**
+   * Initialize the manager by loading all configured LSP servers.
+   *
+   * @throws {Error} If configuration loading fails
+   */
+  async function initialize(): Promise<void> {
+    let serverConfigs: Record<string, ScopedLspServerConfig>
+
+    try {
+      const result = await getAllLspServers()
+      serverConfigs = result.servers
+      logForDebugging(
+        \`[LSP SERVER MANAGER] getAllLspServers returned \${Object.keys(serverConfigs).length} server(s)\`,
+      )
+    } catch (error) {
+      const err = error as Error
+      logError(
+        new Error(\`Failed to load LSP server configuration: \${err.message}\`),
+      )
+      throw error
+    }
+
+    // Build extension → server mapping
+    for (const [serverName, config] of Object.entries(serverConfigs)) {
+      try {
+
+// ... 已截断（共 421 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-3': String.raw`// 学习引导: src/services/lsp/LSPDiagnosticRegistry.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { randomUUID } from 'crypto'
+import { LRUCache } from 'lru-cache'
+import { logForDebugging } from '../../utils/debug.js'
+import { toError } from '../../utils/errors.js'
+import { logError } from '../../utils/log.js'
+import { jsonStringify } from '../../utils/slowOperations.js'
+import type { DiagnosticFile } from '../diagnosticTracking.js'
+
+/**
+ * Pending LSP diagnostic notification
+ */
+export type PendingLSPDiagnostic = {
+  /** Server that sent the diagnostic */
+  serverName: string
+  /** Diagnostic files */
+  files: DiagnosticFile[]
+  /** When diagnostic was received */
+  timestamp: number
+  /** Whether attachment was already sent to conversation */
+  attachmentSent: boolean
+}
+
+/**
+ * LSP Diagnostic Registry
+ *
+ * Stores LSP diagnostics received asynchronously from LSP servers via
+ * textDocument/publishDiagnostics notifications. Follows the same pattern
+ * as AsyncHookRegistry for consistent async attachment delivery.
+ *
+ * Pattern:
+ * 1. LSP server sends publishDiagnostics notification
+ * 2. registerPendingLSPDiagnostic() stores diagnostic
+ * 3. checkForLSPDiagnostics() retrieves pending diagnostics
+ * 4. getLSPDiagnosticAttachments() converts to Attachment[]
+ * 5. getAttachments() delivers to conversation automatically
+ *
+ * Similar to AsyncHookRegistry but simpler since diagnostics arrive
+ * synchronously (no need to accumulate output over time).
+ */
+
+// Volume limiting constants
+const MAX_DIAGNOSTICS_PER_FILE = 10
+const MAX_TOTAL_DIAGNOSTICS = 30
+
+// Max files to track for deduplication - prevents unbounded memory growth
+const MAX_DELIVERED_FILES = 500
+
+// Global registry state
+const pendingDiagnostics = new Map<string, PendingLSPDiagnostic>()
+
+// Cross-turn deduplication: tracks diagnostics that have been delivered
+// Maps file URI to a set of diagnostic keys (hash of message+severity+range)
+// Using LRUCache to prevent unbounded growth in long sessions
+const deliveredDiagnostics = new LRUCache<string, Set<string>>({
+  max: MAX_DELIVERED_FILES,
+})
+
+/**
+ * Register LSP diagnostics received from a server.
+ * These will be delivered as attachments in the next query.
+ *
+ * @param serverName - Name of LSP server that sent diagnostics
+ * @param files - Diagnostic files to deliver
+ */
+export function registerPendingLSPDiagnostic({
+  serverName,
+  files,
+}: {
+  serverName: string
+  files: DiagnosticFile[]
+}): void {
+  // Use UUID for guaranteed uniqueness (handles rapid registrations)
+  const diagnosticId = randomUUID()
+
+  logForDebugging(
+    \`LSP Diagnostics: Registering \${files.length} diagnostic file(s) from \${serverName} (ID: \${diagnosticId})\`,
+  )
+
+  pendingDiagnostics.set(diagnosticId, {
+    serverName,
+    files,
+    timestamp: Date.now(),
+    attachmentSent: false,
+  })
+}
+
+/**
+ * Maps severity string to numeric value for sorting.
+ * Error=1, Warning=2, Info=3, Hint=4
+ */
+
+// ... 已截断（共 387 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-4': String.raw`// 学习引导: src/services/lsp/config.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import type { PluginError } from '../../types/plugin.js'
+import { logForDebugging } from '../../utils/debug.js'
+import { errorMessage, toError } from '../../utils/errors.js'
+import { logError } from '../../utils/log.js'
+import { getPluginLspServers } from '../../utils/plugins/lspPluginIntegration.js'
+import { loadAllPluginsCacheOnly } from '../../utils/plugins/pluginLoader.js'
+import type { ScopedLspServerConfig } from './types.js'
+
+/**
+ * Get all configured LSP servers from plugins.
+ * LSP servers are only supported via plugins, not user/project settings.
+ *
+ * @returns Object containing servers configuration keyed by scoped server name
+ */
+export async function getAllLspServers(): Promise<{
+  servers: Record<string, ScopedLspServerConfig>
+}> {
+  const allServers: Record<string, ScopedLspServerConfig> = {}
+
+  try {
+    // Get all enabled plugins
+    const { enabled: plugins } = await loadAllPluginsCacheOnly()
+
+    // Load LSP servers from each plugin in parallel.
+    // Each plugin is independent — results are merged in original order so
+    // Object.assign collision precedence (later plugins win) is preserved.
+    const results = await Promise.all(
+      plugins.map(async plugin => {
+        const errors: PluginError[] = []
+        try {
+          const scopedServers = await getPluginLspServers(plugin, errors)
+          return { plugin, scopedServers, errors }
+        } catch (e) {
+          // Defensive: if one plugin throws, don't lose results from the
+          // others. The previous serial loop implicitly tolerated this.
+          logForDebugging(
+            \`Failed to load LSP servers for plugin \${plugin.name}: \${e}\`,
+            { level: 'error' },
+          )
+          return { plugin, scopedServers: undefined, errors }
+        }
+      }),
+    )
+
+    for (const { plugin, scopedServers, errors } of results) {
+      const serverCount = scopedServers ? Object.keys(scopedServers).length : 0
+      if (serverCount > 0) {
+        // Merge into all servers (already scoped by getPluginLspServers)
+        Object.assign(allServers, scopedServers)
+
+        logForDebugging(
+          \`Loaded \${serverCount} LSP server(s) from plugin: \${plugin.name}\`,
+        )
+      }
+
+      // Log any errors encountered
+      if (errors.length > 0) {
+        logForDebugging(
+          \`\${errors.length} error(s) loading LSP servers from plugin: \${plugin.name}\`,
+        )
+      }
+    }
+
+    logForDebugging(
+      \`Total LSP servers loaded: \${Object.keys(allServers).length}\`,
+    )
+  } catch (error) {
+    // Log error for monitoring production issues.
+    // LSP is optional, so we don't throw - but we need visibility
+    // into why plugin loading fails to improve the feature.
+    logError(toError(error))
+
+    logForDebugging(\`Error loading LSP servers: \${errorMessage(error)}\`)
+  }
+
+  return {
+    servers: allServers,
+  }
+}
+`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,11 +502,67 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/LSPClient.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/LSPServerManager.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/LSPDiagnosticRegistry.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/config.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/lsp/LSPClient.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/lsp/LSPServerManager.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/lsp/LSPDiagnosticRegistry.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/lsp/config.ts</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

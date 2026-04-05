@@ -9,14 +9,282 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/cost-tracker.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import chalk from 'chalk'
+import {
+  addToTotalCostState,
+  addToTotalLinesChanged,
+  getCostCounter,
+  getModelUsage,
+  getSdkBetas,
+  getSessionId,
+  getTokenCounter,
+  getTotalAPIDuration,
+  getTotalAPIDurationWithoutRetries,
+  getTotalCacheCreationInputTokens,
+  getTotalCacheReadInputTokens,
+  getTotalCostUSD,
+  getTotalDuration,
+  getTotalInputTokens,
+  getTotalLinesAdded,
+  getTotalLinesRemoved,
+  getTotalOutputTokens,
+  getTotalToolDuration,
+  getTotalWebSearchRequests,
+  getUsageForModel,
+  hasUnknownModelCost,
+  resetCostState,
+  resetStateForTests,
+  setCostStateForRestore,
+  setHasUnknownModelCost,
+} from './bootstrap/state.js'
+import type { ModelUsage } from './entrypoints/agentSdkTypes.js'
+import {
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  logEvent,
+} from './services/analytics/index.js'
+import { getAdvisorUsage } from './utils/advisor.js'
+import {
+  getCurrentProjectConfig,
+  saveCurrentProjectConfig,
+} from './utils/config.js'
+import {
+  getContextWindowForModel,
+  getModelMaxOutputTokens,
+} from './utils/context.js'
+import { isFastModeEnabled } from './utils/fastMode.js'
+import { formatDuration, formatNumber } from './utils/format.js'
+import type { FpsMetrics } from './utils/fpsTracker.js'
+import { getCanonicalName } from './utils/model/model.js'
+import { calculateUSDCost } from './utils/modelCost.js'
+export {
+  getTotalCostUSD as getTotalCost,
+  getTotalDuration,
+  getTotalAPIDuration,
+  getTotalAPIDurationWithoutRetries,
+  addToTotalLinesChanged,
+  getTotalLinesAdded,
+  getTotalLinesRemoved,
+  getTotalInputTokens,
+  getTotalOutputTokens,
+  getTotalCacheReadInputTokens,
+  getTotalCacheCreationInputTokens,
+  getTotalWebSearchRequests,
+  formatCost,
+  hasUnknownModelCost,
+  resetStateForTests,
+  resetCostState,
+  setHasUnknownModelCost,
+  getModelUsage,
+  getUsageForModel,
+}
+
+type StoredCostState = {
+  totalCostUSD: number
+  totalAPIDuration: number
+  totalAPIDurationWithoutRetries: number
+  totalToolDuration: number
+  totalLinesAdded: number
+  totalLinesRemoved: number
+  lastDuration: number | undefined
+  modelUsage: { [modelName: string]: ModelUsage } | undefined
+}
+
+/**
+ * Gets stored cost state from project config for a specific session.
+ * Returns the cost data if the session ID matches, or undefined otherwise.
+ * Use this to read costs BEFORE overwriting the config with saveCurrentSessionCosts().
+ */
+export function getStoredSessionCosts(
+  sessionId: string,
+): StoredCostState | undefined {
+  const projectConfig = getCurrentProjectConfig()
+
+// ... 已截断（共 324 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/costHook.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { useEffect } from 'react'
+import { formatTotalCost, saveCurrentSessionCosts } from './cost-tracker.js'
+import { hasConsoleBillingAccess } from './utils/billing.js'
+import type { FpsMetrics } from './utils/fpsTracker.js'
+
+export function useCostSummary(
+  getFpsMetrics?: () => FpsMetrics | undefined,
+): void {
+  useEffect(() => {
+    const f = () => {
+      if (hasConsoleBillingAccess()) {
+        process.stdout.write('\n' + formatTotalCost() + '\n')
+      }
+
+      saveCurrentSessionCosts(getFpsMetrics?.())
+    }
+    process.on('exit', f)
+    return () => {
+      process.off('exit', f)
+    }
+  }, [])
+}
+`,
+            'source-3': String.raw`// 学习引导: src/bootstrap/state.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { Attributes, Meter, MetricOptions } from '@opentelemetry/api'
+import type { logs } from '@opentelemetry/api-logs'
+import type { LoggerProvider } from '@opentelemetry/sdk-logs'
+import type { MeterProvider } from '@opentelemetry/sdk-metrics'
+import type { BasicTracerProvider } from '@opentelemetry/sdk-trace-base'
+import { realpathSync } from 'fs'
+import sumBy from 'lodash-es/sumBy.js'
+import { cwd } from 'process'
+import type { HookEvent, ModelUsage } from 'src/entrypoints/agentSdkTypes.js'
+import type { AgentColorName } from 'src/tools/AgentTool/agentColorManager.js'
+import type { HookCallbackMatcher } from 'src/types/hooks.js'
+// Indirection for browser-sdk build (package.json "browser" field swaps
+// crypto.ts for crypto.browser.ts). Pure leaf re-export of node:crypto —
+// zero circular-dep risk. Path-alias import bypasses bootstrap-isolation
+// (rule only checks ./ and / prefixes); explicit disable documents intent.
+// eslint-disable-next-line custom-rules/bootstrap-isolation
+import { randomUUID } from 'src/utils/crypto.js'
+import type { ModelSetting } from 'src/utils/model/model.js'
+import type { ModelStrings } from 'src/utils/model/modelStrings.js'
+import type { SettingSource } from 'src/utils/settings/constants.js'
+import { resetSettingsCache } from 'src/utils/settings/settingsCache.js'
+import type { PluginHookMatcher } from 'src/utils/settings/types.js'
+import { createSignal } from 'src/utils/signal.js'
+
+// Union type for registered hooks - can be SDK callbacks or native plugin hooks
+type RegisteredHookMatcher = HookCallbackMatcher | PluginHookMatcher
+
+import type { SessionId } from 'src/types/ids.js'
+
+// DO NOT ADD MORE STATE HERE - BE JUDICIOUS WITH GLOBAL STATE
+
+// dev: true on entries that came via --dangerously-load-development-channels.
+// The allowlist gate checks this per-entry (not the session-wide
+// hasDevChannels bit) so passing both flags doesn't let the dev dialog's
+// acceptance leak allowlist-bypass to the --channels entries.
+export type ChannelEntry =
+  | { kind: 'plugin'; name: string; marketplace: string; dev?: boolean }
+  | { kind: 'server'; name: string; dev?: boolean }
+
+export type AttributedCounter = {
+  add(value: number, additionalAttributes?: Attributes): void
+}
+
+type State = {
+  originalCwd: string
+  // Stable project root - set once at startup (including by --worktree flag),
+  // never updated by mid-session EnterWorktreeTool.
+  // Use for project identity (history, skills, sessions) not file operations.
+  projectRoot: string
+  totalCostUSD: number
+  totalAPIDuration: number
+  totalAPIDurationWithoutRetries: number
+  totalToolDuration: number
+  turnHookDurationMs: number
+  turnToolDurationMs: number
+  turnClassifierDurationMs: number
+  turnToolCount: number
+  turnHookCount: number
+  turnClassifierCount: number
+  startTime: number
+  lastInteractionTime: number
+  totalLinesAdded: number
+  totalLinesRemoved: number
+  hasUnknownModelCost: boolean
+  cwd: string
+  modelUsage: { [modelName: string]: ModelUsage }
+  mainLoopModelOverride: ModelSetting | undefined
+  initialMainLoopModel: ModelSetting
+  modelStrings: ModelStrings | null
+  isInteractive: boolean
+  kairosActive: boolean
+  // When true, ensureToolResultPairing throws on mismatch instead of
+  // repairing with synthetic placeholders. HFI opts in at startup so
+  // trajectories fail fast rather than conditioning the model on fake
+  // tool_results.
+  strictToolResultPairing: boolean
+  sdkAgentProgressSummariesEnabled: boolean
+  userMsgOptIn: boolean
+  clientType: string
+  sessionSource: string | undefined
+  questionPreviewFormat: 'markdown' | 'html' | undefined
+  flagSettingsPath: string | undefined
+  flagSettingsInline: Record<string, unknown> | null
+  allowedSettingSources: SettingSource[]
+  sessionIngressToken: string | null | undefined
+  oauthTokenFromFd: string | null | undefined
+  apiKeyFromFd: string | null | undefined
+  // Telemetry state
+  meter: Meter | null
+
+// ... 已截断（共 1759 行），建议在 VS Code 继续阅读完整文件。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,10 +348,52 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/cost-tracker.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/costHook.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/bootstrap/state.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/cost-tracker.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/costHook.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/bootstrap/state.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

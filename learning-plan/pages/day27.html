@@ -9,14 +9,63 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: 全链路追踪
+// 该条目不是可直接读取的本地源码路径。
+// 请结合本页学习要点与思考题做总结反思。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,8 +129,22 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-red-600 font-mono">全链路追踪</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">全链路追踪</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

@@ -9,14 +9,254 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/query.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+// biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+import type {
+  ToolResultBlockParam,
+  ToolUseBlock,
+} from '@anthropic-ai/sdk/resources/index.mjs'
+import type { CanUseToolFn } from './hooks/useCanUseTool.js'
+import { FallbackTriggeredError } from './services/api/withRetry.js'
+import {
+  calculateTokenWarningState,
+  isAutoCompactEnabled,
+  type AutoCompactTrackingState,
+} from './services/compact/autoCompact.js'
+import { buildPostCompactMessages } from './services/compact/compact.js'
+/* eslint-disable @typescript-eslint/no-require-imports */
+const reactiveCompact = feature('REACTIVE_COMPACT')
+  ? (require('./services/compact/reactiveCompact.js') as typeof import('./services/compact/reactiveCompact.js'))
+  : null
+const contextCollapse = feature('CONTEXT_COLLAPSE')
+  ? (require('./services/contextCollapse/index.js') as typeof import('./services/contextCollapse/index.js'))
+  : null
+/* eslint-enable @typescript-eslint/no-require-imports */
+import {
+  logEvent,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+} from 'src/services/analytics/index.js'
+import { ImageSizeError } from './utils/imageValidation.js'
+import { ImageResizeError } from './utils/imageResizer.js'
+import { findToolByName, type ToolUseContext } from './Tool.js'
+import { asSystemPrompt, type SystemPrompt } from './utils/systemPromptType.js'
+import type {
+  AssistantMessage,
+  AttachmentMessage,
+  Message,
+  RequestStartEvent,
+  StreamEvent,
+  ToolUseSummaryMessage,
+  UserMessage,
+  TombstoneMessage,
+} from './types/message.js'
+import { logError } from './utils/log.js'
+import {
+  PROMPT_TOO_LONG_ERROR_MESSAGE,
+  isPromptTooLongMessage,
+} from './services/api/errors.js'
+import { logAntError, logForDebugging } from './utils/debug.js'
+import {
+  createUserMessage,
+  createUserInterruptionMessage,
+  normalizeMessagesForAPI,
+  createSystemMessage,
+  createAssistantAPIErrorMessage,
+  getMessagesAfterCompactBoundary,
+  createToolUseSummaryMessage,
+  createMicrocompactBoundaryMessage,
+  stripSignatureBlocks,
+} from './utils/messages.js'
+import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js'
+import { prependUserContext, appendSystemContext } from './utils/api.js'
+import {
+  createAttachmentMessage,
+  filterDuplicateMemoryAttachments,
+  getAttachmentMessages,
+  startRelevantMemoryPrefetch,
+} from './utils/attachments.js'
+/* eslint-disable @typescript-eslint/no-require-imports */
+const skillPrefetch = feature('EXPERIMENTAL_SKILL_SEARCH')
+  ? (require('./services/skillSearch/prefetch.js') as typeof import('./services/skillSearch/prefetch.js'))
+  : null
+const jobClassifier = feature('TEMPLATES')
+  ? (require('./jobs/classifier.js') as typeof import('./jobs/classifier.js'))
+  : null
+/* eslint-enable @typescript-eslint/no-require-imports */
+import {
+  remove as removeFromQueue,
+  getCommandsByMaxPriority,
+  isSlashCommand,
+} from './utils/messageQueueManager.js'
+import { notifyCommandLifecycle } from './utils/commandLifecycle.js'
+import { headlessProfilerCheckpoint } from './utils/headlessProfiler.js'
+import {
+  getRuntimeMainLoopModel,
+  renderModelName,
+} from './utils/model/model.js'
+import {
+  doesMostRecentAssistantMessageExceed200k,
+  finalContextTokensFromLastResponse,
+  tokenCountWithEstimation,
+} from './utils/tokens.js'
+import { ESCALATED_MAX_TOKENS } from './utils/context.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from './services/analytics/growthbook.js'
+
+// ... 已截断（共 1730 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/QueryEngine.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { feature } from 'bun:bundle'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import { randomUUID } from 'crypto'
+import last from 'lodash-es/last.js'
+import {
+  getSessionId,
+  isSessionPersistenceDisabled,
+} from 'src/bootstrap/state.js'
+import type {
+  PermissionMode,
+  SDKCompactBoundaryMessage,
+  SDKMessage,
+  SDKPermissionDenial,
+  SDKStatus,
+  SDKUserMessageReplay,
+} from 'src/entrypoints/agentSdkTypes.js'
+import { accumulateUsage, updateUsage } from 'src/services/api/claude.js'
+import type { NonNullableUsage } from 'src/services/api/logging.js'
+import { EMPTY_USAGE } from 'src/services/api/logging.js'
+import stripAnsi from 'strip-ansi'
+import type { Command } from './commands.js'
+import { getSlashCommandToolSkills } from './commands.js'
+import {
+  LOCAL_COMMAND_STDERR_TAG,
+  LOCAL_COMMAND_STDOUT_TAG,
+} from './constants/xml.js'
+import {
+  getModelUsage,
+  getTotalAPIDuration,
+  getTotalCost,
+} from './cost-tracker.js'
+import type { CanUseToolFn } from './hooks/useCanUseTool.js'
+import { loadMemoryPrompt } from './memdir/memdir.js'
+import { hasAutoMemPathOverride } from './memdir/paths.js'
+import { query } from './query.js'
+import { categorizeRetryableAPIError } from './services/api/errors.js'
+import type { MCPServerConnection } from './services/mcp/types.js'
+import type { AppState } from './state/AppState.js'
+import { type Tools, type ToolUseContext, toolMatchesName } from './Tool.js'
+import type { AgentDefinition } from './tools/AgentTool/loadAgentsDir.js'
+import { SYNTHETIC_OUTPUT_TOOL_NAME } from './tools/SyntheticOutputTool/SyntheticOutputTool.js'
+import type { Message } from './types/message.js'
+import type { OrphanedPermission } from './types/textInputTypes.js'
+import { createAbortController } from './utils/abortController.js'
+import type { AttributionState } from './utils/commitAttribution.js'
+import { getGlobalConfig } from './utils/config.js'
+import { getCwd } from './utils/cwd.js'
+import { isBareMode, isEnvTruthy } from './utils/envUtils.js'
+import { getFastModeState } from './utils/fastMode.js'
+import {
+  type FileHistoryState,
+  fileHistoryEnabled,
+  fileHistoryMakeSnapshot,
+} from './utils/fileHistory.js'
+import {
+  cloneFileStateCache,
+  type FileStateCache,
+} from './utils/fileStateCache.js'
+import { headlessProfilerCheckpoint } from './utils/headlessProfiler.js'
+import { registerStructuredOutputEnforcement } from './utils/hooks/hookHelpers.js'
+import { getInMemoryErrors } from './utils/log.js'
+import { countToolCalls, SYNTHETIC_MESSAGES } from './utils/messages.js'
+import {
+  getMainLoopModel,
+  parseUserSpecifiedModel,
+} from './utils/model/model.js'
+import { loadAllPluginsCacheOnly } from './utils/plugins/pluginLoader.js'
+import {
+  type ProcessUserInputContext,
+  processUserInput,
+} from './utils/processUserInput/processUserInput.js'
+import { fetchSystemPromptParts } from './utils/queryContext.js'
+import { setCwd } from './utils/Shell.js'
+import {
+  flushSessionStorage,
+  recordTranscript,
+} from './utils/sessionStorage.js'
+import { asSystemPrompt } from './utils/systemPromptType.js'
+import { resolveThemeSetting } from './utils/systemTheme.js'
+import {
+  shouldEnableThinkingByDefault,
+  type ThinkingConfig,
+} from './utils/thinking.js'
+
+// Lazy: MessageSelector.tsx pulls React/ink; only needed for message filtering at query time
+/* eslint-disable @typescript-eslint/no-require-imports */
+const messageSelector =
+  (): typeof import('src/components/MessageSelector.js') =>
+    require('src/components/MessageSelector.js')
+
+
+// ... 已截断（共 1296 行），建议在 VS Code 继续阅读完整文件。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,9 +320,37 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/query.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/QueryEngine.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/query.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/QueryEngine.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

@@ -9,14 +9,492 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/services/analytics/index.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * Analytics service - public API for event logging
+ *
+ * This module serves as the main entry point for analytics events in Claude CLI.
+ *
+ * DESIGN: This module has NO dependencies to avoid import cycles.
+ * Events are queued until attachAnalyticsSink() is called during app initialization.
+ * The sink handles routing to Datadog and 1P event logging.
+ */
+
+/**
+ * Marker type for verifying analytics metadata doesn't contain sensitive data
+ *
+ * This type forces explicit verification that string values being logged
+ * don't contain code snippets, file paths, or other sensitive information.
+ *
+ * Usage: \`myString as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS\`
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
+
+/**
+ * Marker type for values routed to PII-tagged proto columns via \`_PROTO_*\`
+ * payload keys. The destination BQ column has privileged access controls,
+ * so unredacted values are acceptable — unlike general-access backends.
+ *
+ * sink.ts strips \`_PROTO_*\` keys before Datadog fanout; only the 1P
+ * exporter (firstPartyEventLoggingExporter) sees them and hoists them to the
+ * top-level proto field. A single stripProtoFields call guards all non-1P
+ * sinks — no per-sink filtering to forget.
+ *
+ * Usage: \`rawName as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED\`
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED = never
+
+/**
+ * Strip \`_PROTO_*\` keys from a payload destined for general-access storage.
+ * Used by:
+ *   - sink.ts: before Datadog fanout (never sees PII-tagged values)
+ *   - firstPartyEventLoggingExporter: defensive strip of additional_metadata
+ *     after hoisting known _PROTO_* keys to proto fields — prevents a future
+ *     unrecognized _PROTO_foo from silently landing in the BQ JSON blob.
+ *
+ * Returns the input unchanged (same reference) when no _PROTO_ keys present.
+ */
+export function stripProtoFields<V>(
+  metadata: Record<string, V>,
+): Record<string, V> {
+  let result: Record<string, V> | undefined
+  for (const key in metadata) {
+    if (key.startsWith('_PROTO_')) {
+      if (result === undefined) {
+        result = { ...metadata }
+      }
+      delete result[key]
+    }
+  }
+  return result ?? metadata
+}
+
+// Internal type for logEvent metadata - different from the enriched EventMetadata in metadata.ts
+type LogEventMetadata = { [key: string]: boolean | number | undefined }
+
+type QueuedEvent = {
+  eventName: string
+  metadata: LogEventMetadata
+  async: boolean
+}
+
+/**
+ * Sink interface for the analytics backend
+ */
+export type AnalyticsSink = {
+  logEvent: (eventName: string, metadata: LogEventMetadata) => void
+  logEventAsync: (
+    eventName: string,
+    metadata: LogEventMetadata,
+  ) => Promise<void>
+}
+
+// Event queue for events logged before sink is attached
+const eventQueue: QueuedEvent[] = []
+
+// Sink - initialized during app startup
+let sink: AnalyticsSink | null = null
+
+/**
+ * Attach the analytics sink that will receive all events.
+ * Queued events are drained asynchronously via queueMicrotask to avoid
+ * adding latency to the startup path.
+ *
+
+// ... 已截断（共 174 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/services/analytics/config.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * Shared analytics configuration
+ *
+ * Common logic for determining when analytics should be disabled
+ * across all analytics systems (Datadog, 1P)
+ */
+
+import { isEnvTruthy } from '../../utils/envUtils.js'
+import { isTelemetryDisabled } from '../../utils/privacyLevel.js'
+
+/**
+ * Check if analytics operations should be disabled
+ *
+ * Analytics is disabled in the following cases:
+ * - Test environment (NODE_ENV === 'test')
+ * - Third-party cloud providers (Bedrock/Vertex)
+ * - Privacy level is no-telemetry or essential-traffic
+ */
+export function isAnalyticsDisabled(): boolean {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
+    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
+    isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
+    isTelemetryDisabled()
+  )
+}
+
+/**
+ * Check if the feedback survey should be suppressed.
+ *
+ * Unlike isAnalyticsDisabled(), this does NOT block on 3P providers
+ * (Bedrock/Vertex/Foundry). The survey is a local UI prompt with no
+ * transcript data — enterprise customers capture responses via OTEL.
+ */
+export function isFeedbackSurveyDisabled(): boolean {
+  return process.env.NODE_ENV === 'test' || isTelemetryDisabled()
+}
+`,
+            'source-3': String.raw`// 学习引导: src/services/analytics/sink.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * Analytics sink implementation
+ *
+ * This module contains the actual analytics routing logic and should be
+ * initialized during app startup. It routes events to Datadog and 1P event
+ * logging.
+ *
+ * Usage: Call initializeAnalyticsSink() during app startup to attach the sink.
+ */
+
+import { trackDatadogEvent } from './datadog.js'
+import { logEventTo1P, shouldSampleEvent } from './firstPartyEventLogger.js'
+import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from './growthbook.js'
+import { attachAnalyticsSink, stripProtoFields } from './index.js'
+import { isSinkKilled } from './sinkKillswitch.js'
+
+// Local type matching the logEvent metadata signature
+type LogEventMetadata = { [key: string]: boolean | number | undefined }
+
+const DATADOG_GATE_NAME = 'tengu_log_datadog_events'
+
+// Module-level gate state - starts undefined, initialized during startup
+let isDatadogGateEnabled: boolean | undefined = undefined
+
+/**
+ * Check if Datadog tracking is enabled.
+ * Falls back to cached value from previous session if not yet initialized.
+ */
+function shouldTrackDatadog(): boolean {
+  if (isSinkKilled('datadog')) {
+    return false
+  }
+  if (isDatadogGateEnabled !== undefined) {
+    return isDatadogGateEnabled
+  }
+
+  // Fallback to cached value from previous session
+  try {
+    return checkStatsigFeatureGate_CACHED_MAY_BE_STALE(DATADOG_GATE_NAME)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Log an event (synchronous implementation)
+ */
+function logEventImpl(eventName: string, metadata: LogEventMetadata): void {
+  // Check if this event should be sampled
+  const sampleResult = shouldSampleEvent(eventName)
+
+  // If sample result is 0, the event was not selected for logging
+  if (sampleResult === 0) {
+    return
+  }
+
+  // If sample result is a positive number, add it to metadata
+  const metadataWithSampleRate =
+    sampleResult !== null
+      ? { ...metadata, sample_rate: sampleResult }
+      : metadata
+
+  if (shouldTrackDatadog()) {
+    // Datadog is a general-access backend — strip _PROTO_* keys
+    // (unredacted PII-tagged values meant only for the 1P privileged column).
+    void trackDatadogEvent(eventName, stripProtoFields(metadataWithSampleRate))
+  }
+
+  // 1P receives the full payload including _PROTO_* — the exporter
+  // destructures and routes those keys to proto fields itself.
+  logEventTo1P(eventName, metadataWithSampleRate)
+}
+
+/**
+ * Log an event (asynchronous implementation)
+ *
+ * With Segment removed the two remaining sinks are fire-and-forget, so this
+ * just wraps the sync impl — kept to preserve the sink interface contract.
+ */
+function logEventAsyncImpl(
+  eventName: string,
+  metadata: LogEventMetadata,
+): Promise<void> {
+  logEventImpl(eventName, metadata)
+  return Promise.resolve()
+}
+
+/**
+ * Initialize analytics gates during startup.
+ *
+
+// ... 已截断（共 115 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-4': String.raw`// 学习引导: src/services/analytics/datadog.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import axios from 'axios'
+import { createHash } from 'crypto'
+import memoize from 'lodash-es/memoize.js'
+import { getOrCreateUserID } from '../../utils/config.js'
+import { logError } from '../../utils/log.js'
+import { getCanonicalName } from '../../utils/model/model.js'
+import { getAPIProvider } from '../../utils/model/providers.js'
+import { MODEL_COSTS } from '../../utils/modelCost.js'
+import { isAnalyticsDisabled } from './config.js'
+import { getEventMetadata } from './metadata.js'
+
+const DATADOG_LOGS_ENDPOINT =
+  'https://http-intake.logs.us5.datadoghq.com/api/v2/logs'
+const DATADOG_CLIENT_TOKEN = 'pubbbf48e6d78dae54bceaa4acf463299bf'
+const DEFAULT_FLUSH_INTERVAL_MS = 15000
+const MAX_BATCH_SIZE = 100
+const NETWORK_TIMEOUT_MS = 5000
+
+const DATADOG_ALLOWED_EVENTS = new Set([
+  'chrome_bridge_connection_succeeded',
+  'chrome_bridge_connection_failed',
+  'chrome_bridge_disconnected',
+  'chrome_bridge_tool_call_completed',
+  'chrome_bridge_tool_call_error',
+  'chrome_bridge_tool_call_started',
+  'chrome_bridge_tool_call_timeout',
+  'tengu_api_error',
+  'tengu_api_success',
+  'tengu_brief_mode_enabled',
+  'tengu_brief_mode_toggled',
+  'tengu_brief_send',
+  'tengu_cancel',
+  'tengu_compact_failed',
+  'tengu_exit',
+  'tengu_flicker',
+  'tengu_init',
+  'tengu_model_fallback_triggered',
+  'tengu_oauth_error',
+  'tengu_oauth_success',
+  'tengu_oauth_token_refresh_failure',
+  'tengu_oauth_token_refresh_success',
+  'tengu_oauth_token_refresh_lock_acquiring',
+  'tengu_oauth_token_refresh_lock_acquired',
+  'tengu_oauth_token_refresh_starting',
+  'tengu_oauth_token_refresh_completed',
+  'tengu_oauth_token_refresh_lock_releasing',
+  'tengu_oauth_token_refresh_lock_released',
+  'tengu_query_error',
+  'tengu_session_file_read',
+  'tengu_started',
+  'tengu_tool_use_error',
+  'tengu_tool_use_granted_in_prompt_permanent',
+  'tengu_tool_use_granted_in_prompt_temporary',
+  'tengu_tool_use_rejected_in_prompt',
+  'tengu_tool_use_success',
+  'tengu_uncaught_exception',
+  'tengu_unhandled_rejection',
+  'tengu_voice_recording_started',
+  'tengu_voice_toggled',
+  'tengu_team_mem_sync_pull',
+  'tengu_team_mem_sync_push',
+  'tengu_team_mem_sync_started',
+  'tengu_team_mem_entries_capped',
+])
+
+const TAG_FIELDS = [
+  'arch',
+  'clientType',
+  'errorType',
+  'http_status_range',
+  'http_status',
+  'kairosActive',
+  'model',
+  'platform',
+  'provider',
+  'skillMode',
+  'subscriptionType',
+  'toolName',
+  'userBucket',
+  'userType',
+  'version',
+  'versionBase',
+]
+
+function camelToSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => \`_\${letter.toLowerCase()}\`)
+}
+
+type DatadogLog = {
+  ddsource: string
+
+// ... 已截断（共 308 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-5': String.raw`// 学习引导: src/services/analytics/growthbook.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { GrowthBook } from '@growthbook/growthbook'
+import { isEqual, memoize } from 'lodash-es'
+import {
+  getIsNonInteractiveSession,
+  getSessionTrustAccepted,
+} from '../../bootstrap/state.js'
+import { getGrowthBookClientKey } from '../../constants/keys.js'
+import {
+  checkHasTrustDialogAccepted,
+  getGlobalConfig,
+  saveGlobalConfig,
+} from '../../utils/config.js'
+import { logForDebugging } from '../../utils/debug.js'
+import { toError } from '../../utils/errors.js'
+import { getAuthHeaders } from '../../utils/http.js'
+import { logError } from '../../utils/log.js'
+import { createSignal } from '../../utils/signal.js'
+import { jsonStringify } from '../../utils/slowOperations.js'
+import {
+  type GitHubActionsMetadata,
+  getUserForGrowthBook,
+} from '../../utils/user.js'
+import {
+  is1PEventLoggingEnabled,
+  logGrowthBookExperimentTo1P,
+} from './firstPartyEventLogger.js'
+
+/**
+ * User attributes sent to GrowthBook for targeting.
+ * Uses UUID suffix (not Uuid) to align with GrowthBook conventions.
+ */
+export type GrowthBookUserAttributes = {
+  id: string
+  sessionId: string
+  deviceID: string
+  platform: 'win32' | 'darwin' | 'linux'
+  apiBaseUrlHost?: string
+  organizationUUID?: string
+  accountUUID?: string
+  userType?: string
+  subscriptionType?: string
+  rateLimitTier?: string
+  firstTokenTime?: number
+  email?: string
+  appVersion?: string
+  github?: GitHubActionsMetadata
+}
+
+/**
+ * Malformed feature response from API that uses "value" instead of "defaultValue".
+ * This is a workaround until the API is fixed.
+ */
+type MalformedFeatureDefinition = {
+  value?: unknown
+  defaultValue?: unknown
+  [key: string]: unknown
+}
+
+let client: GrowthBook | null = null
+
+// Named handler refs so resetGrowthBook can remove them to prevent accumulation
+let currentBeforeExitHandler: (() => void) | null = null
+let currentExitHandler: (() => void) | null = null
+
+// Track whether auth was available when the client was created
+// This allows us to detect when we need to recreate with fresh auth headers
+let clientCreatedWithAuth = false
+
+// Store experiment data from payload for logging exposures later
+type StoredExperimentData = {
+  experimentId: string
+  variationId: number
+  inExperiment?: boolean
+  hashAttribute?: string
+  hashValue?: string
+}
+const experimentDataByFeature = new Map<string, StoredExperimentData>()
+
+// Cache for remote eval feature values - workaround for SDK not respecting remoteEval response
+// The SDK's setForcedFeatures also doesn't work reliably with remoteEval
+const remoteEvalFeatureValues = new Map<string, unknown>()
+
+// Track features accessed before init that need exposure logging
+const pendingExposures = new Set<string>()
+
+// Track features that have already had their exposure logged this session (dedup)
+// This prevents firing duplicate exposure events when getFeatureValue_CACHED_MAY_BE_STALE
+// is called repeatedly in hot paths (e.g., isAutoMemoryEnabled in render loops)
+const loggedExposures = new Set<string>()
+
+
+// ... 已截断（共 1156 行），建议在 VS Code 继续阅读完整文件。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,12 +558,82 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/analytics/index.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/analytics/config.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/analytics/sink.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/analytics/datadog.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/analytics/growthbook.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/analytics/index.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/analytics/config.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/analytics/sink.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/analytics/datadog.ts</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/analytics/growthbook.ts</code>
+        <button onclick="toggleCode('source-5', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-5" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-5"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

@@ -9,14 +9,357 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/services/plugins/PluginInstallationManager.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * Background plugin and marketplace installation manager
+ *
+ * This module handles automatic installation of plugins and marketplaces
+ * from trusted sources (repository and user settings) without blocking startup.
+ */
+
+import type { AppState } from '../../state/AppState.js'
+import { logForDebugging } from '../../utils/debug.js'
+import { logForDiagnosticsNoPII } from '../../utils/diagLogs.js'
+import { logError } from '../../utils/log.js'
+import {
+  clearMarketplacesCache,
+  getDeclaredMarketplaces,
+  loadKnownMarketplacesConfig,
+} from '../../utils/plugins/marketplaceManager.js'
+import { clearPluginCache } from '../../utils/plugins/pluginLoader.js'
+import {
+  diffMarketplaces,
+  reconcileMarketplaces,
+} from '../../utils/plugins/reconciler.js'
+import { refreshActivePlugins } from '../../utils/plugins/refresh.js'
+import { logEvent } from '../analytics/index.js'
+
+type SetAppState = (f: (prevState: AppState) => AppState) => void
+
+/**
+ * Update marketplace installation status in app state
+ */
+function updateMarketplaceStatus(
+  setAppState: SetAppState,
+  name: string,
+  status: 'pending' | 'installing' | 'installed' | 'failed',
+  error?: string,
+): void {
+  setAppState(prevState => ({
+    ...prevState,
+    plugins: {
+      ...prevState.plugins,
+      installationStatus: {
+        ...prevState.plugins.installationStatus,
+        marketplaces: prevState.plugins.installationStatus.marketplaces.map(
+          m => (m.name === name ? { ...m, status, error } : m),
+        ),
+      },
+    },
+  }))
+}
+
+/**
+ * Perform background plugin startup checks and installations.
+ *
+ * This is a thin wrapper around reconcileMarketplaces() that maps onProgress
+ * events to AppState updates for the REPL UI. After marketplaces are
+ * reconciled:
+ * - New installs → auto-refresh plugins (fixes "plugin-not-found" errors
+ *   from the initial cache-only load on fresh homespace/cleared cache)
+ * - Updates only → set needsRefresh, show notification for /reload-plugins
+ */
+export async function performBackgroundPluginInstallations(
+  setAppState: SetAppState,
+): Promise<void> {
+  logForDebugging('performBackgroundPluginInstallations called')
+
+  try {
+    // Compute diff upfront for initial UI status (pending spinners)
+    const declared = getDeclaredMarketplaces()
+    const materialized = await loadKnownMarketplacesConfig().catch(() => ({}))
+    const diff = diffMarketplaces(declared, materialized)
+
+    const pendingNames = [
+      ...diff.missing,
+      ...diff.sourceChanged.map(c => c.name),
+    ]
+
+    // Initialize AppState with pending status. No per-plugin pending status —
+    // plugin load is fast (cache hit or local copy); marketplace clone is the
+    // slow part worth showing progress for.
+    setAppState(prev => ({
+      ...prev,
+      plugins: {
+        ...prev.plugins,
+        installationStatus: {
+          marketplaces: pendingNames.map(name => ({
+            name,
+            status: 'pending' as const,
+          })),
+          plugins: [],
+        },
+      },
+
+// ... 已截断（共 185 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/services/plugins/pluginOperations.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * Core plugin operations (install, uninstall, enable, disable, update)
+ *
+ * This module provides pure library functions that can be used by both:
+ * - CLI commands (\`claude plugin install/uninstall/enable/disable/update\`)
+ * - Interactive UI (ManagePlugins.tsx)
+ *
+ * Functions in this module:
+ * - Do NOT call process.exit()
+ * - Do NOT write to console
+ * - Return result objects indicating success/failure with messages
+ * - Can throw errors for unexpected failures
+ */
+import { dirname, join } from 'path'
+import { getOriginalCwd } from '../../bootstrap/state.js'
+import { isBuiltinPluginId } from '../../plugins/builtinPlugins.js'
+import type { LoadedPlugin, PluginManifest } from '../../types/plugin.js'
+import { isENOENT, toError } from '../../utils/errors.js'
+import { getFsImplementation } from '../../utils/fsOperations.js'
+import { logError } from '../../utils/log.js'
+import {
+  clearAllCaches,
+  markPluginVersionOrphaned,
+} from '../../utils/plugins/cacheUtils.js'
+import {
+  findReverseDependents,
+  formatReverseDependentsSuffix,
+} from '../../utils/plugins/dependencyResolver.js'
+import {
+  loadInstalledPluginsFromDisk,
+  loadInstalledPluginsV2,
+  removePluginInstallation,
+  updateInstallationPathOnDisk,
+} from '../../utils/plugins/installedPluginsManager.js'
+import {
+  getMarketplace,
+  getPluginById,
+  loadKnownMarketplacesConfig,
+} from '../../utils/plugins/marketplaceManager.js'
+import { deletePluginDataDir } from '../../utils/plugins/pluginDirectories.js'
+import {
+  parsePluginIdentifier,
+  scopeToSettingSource,
+} from '../../utils/plugins/pluginIdentifier.js'
+import {
+  formatResolutionError,
+  installResolvedPlugin,
+} from '../../utils/plugins/pluginInstallationHelpers.js'
+import {
+  cachePlugin,
+  copyPluginToVersionedCache,
+  getVersionedCachePath,
+  getVersionedZipCachePath,
+  loadAllPlugins,
+  loadPluginManifest,
+} from '../../utils/plugins/pluginLoader.js'
+import { deletePluginOptions } from '../../utils/plugins/pluginOptionsStorage.js'
+import { isPluginBlockedByPolicy } from '../../utils/plugins/pluginPolicy.js'
+import { getPluginEditableScopes } from '../../utils/plugins/pluginStartupCheck.js'
+import { calculatePluginVersion } from '../../utils/plugins/pluginVersioning.js'
+import type {
+  PluginMarketplaceEntry,
+  PluginScope,
+} from '../../utils/plugins/schemas.js'
+import {
+  getSettingsForSource,
+  updateSettingsForSource,
+} from '../../utils/settings/settings.js'
+import { plural } from '../../utils/stringUtils.js'
+
+/** Valid installable scopes (excludes 'managed' which can only be installed from managed-settings.json) */
+export const VALID_INSTALLABLE_SCOPES = ['user', 'project', 'local'] as const
+
+/** Installation scope type derived from VALID_INSTALLABLE_SCOPES */
+export type InstallableScope = (typeof VALID_INSTALLABLE_SCOPES)[number]
+
+/** Valid scopes for update operations (includes 'managed' since managed plugins can be updated) */
+export const VALID_UPDATE_SCOPES: readonly PluginScope[] = [
+  'user',
+  'project',
+  'local',
+  'managed',
+] as const
+
+/**
+ * Assert that a scope is a valid installable scope at runtime
+ * @param scope The scope to validate
+ * @throws Error if scope is not a valid installable scope
+ */
+export function assertInstallableScope(
+
+// ... 已截断（共 1089 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-3': String.raw`// 学习引导: src/services/plugins/pluginCliCommands.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+/**
+ * CLI command wrappers for plugin operations
+ *
+ * This module provides thin wrappers around the core plugin operations
+ * that handle CLI-specific concerns like console output and process exit.
+ *
+ * For the core operations (without CLI side effects), see pluginOperations.ts
+ */
+import figures from 'figures'
+import { errorMessage } from '../../utils/errors.js'
+import { gracefulShutdown } from '../../utils/gracefulShutdown.js'
+import { logError } from '../../utils/log.js'
+import { getManagedPluginNames } from '../../utils/plugins/managedPlugins.js'
+import { parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js'
+import type { PluginScope } from '../../utils/plugins/schemas.js'
+import { writeToStdout } from '../../utils/process.js'
+import {
+  buildPluginTelemetryFields,
+  classifyPluginCommandError,
+} from '../../utils/telemetry/pluginTelemetry.js'
+import {
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+  logEvent,
+} from '../analytics/index.js'
+import {
+  disableAllPluginsOp,
+  disablePluginOp,
+  enablePluginOp,
+  type InstallableScope,
+  installPluginOp,
+  uninstallPluginOp,
+  updatePluginOp,
+  VALID_INSTALLABLE_SCOPES,
+  VALID_UPDATE_SCOPES,
+} from './pluginOperations.js'
+
+export { VALID_INSTALLABLE_SCOPES, VALID_UPDATE_SCOPES }
+
+type PluginCliCommand =
+  | 'install'
+  | 'uninstall'
+  | 'enable'
+  | 'disable'
+  | 'disable-all'
+  | 'update'
+
+/**
+ * Generic error handler for plugin CLI commands. Emits
+ * tengu_plugin_command_failed before exit so dashboards can compute a
+ * success rate against the corresponding success events.
+ */
+function handlePluginCommandError(
+  error: unknown,
+  command: PluginCliCommand,
+  plugin?: string,
+): never {
+  logError(error)
+  const operation = plugin
+    ? \`\${command} plugin "\${plugin}"\`
+    : command === 'disable-all'
+      ? 'disable all plugins'
+      : \`\${command} plugins\`
+  // biome-ignore lint/suspicious/noConsole:: intentional console output
+  console.error(
+    \`\${figures.cross} Failed to \${operation}: \${errorMessage(error)}\`,
+  )
+  const telemetryFields = plugin
+    ? (() => {
+        const { name, marketplace } = parsePluginIdentifier(plugin)
+        return {
+          _PROTO_plugin_name:
+            name as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+          ...(marketplace && {
+            _PROTO_marketplace_name:
+              marketplace as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+          }),
+          ...buildPluginTelemetryFields(
+            name,
+            marketplace,
+            getManagedPluginNames(),
+          ),
+        }
+      })()
+    : {}
+  logEvent('tengu_plugin_command_failed', {
+    command:
+      command as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    error_category: classifyPluginCommandError(
+      error,
+
+// ... 已截断（共 345 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-4': String.raw`// 学习引导: src/plugins/（目录）
+// 目录预览（最多 30 项）:
+- builtinPlugins.ts
+- bundled/
+
+// 建议: 从命名最关键的 1-2 个文件开始，沿调用链追踪。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,11 +423,67 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/plugins/PluginInstallationManager.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/plugins/pluginOperations.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/plugins/pluginCliCommands.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/plugins/</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/plugins/PluginInstallationManager.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/plugins/pluginOperations.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/plugins/pluginCliCommands.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/plugins/</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

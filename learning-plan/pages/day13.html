@@ -9,14 +9,420 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/services/api/client.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
+import { randomUUID } from 'crypto'
+import type { GoogleAuth } from 'google-auth-library'
+import {
+  checkAndRefreshOAuthTokenIfNeeded,
+  getAnthropicApiKey,
+  getApiKeyFromApiKeyHelper,
+  getClaudeAIOAuthTokens,
+  isClaudeAISubscriber,
+  refreshAndGetAwsCredentials,
+  refreshGcpCredentialsIfNeeded,
+} from 'src/utils/auth.js'
+import { getUserAgent } from 'src/utils/http.js'
+import { getSmallFastModel } from 'src/utils/model/model.js'
+import {
+  getAPIProvider,
+  isFirstPartyAnthropicBaseUrl,
+} from 'src/utils/model/providers.js'
+import { getProxyFetchOptions } from 'src/utils/proxy.js'
+import {
+  getIsNonInteractiveSession,
+  getSessionId,
+} from '../../bootstrap/state.js'
+import { getOauthConfig } from '../../constants/oauth.js'
+import { isDebugToStdErr, logForDebugging } from '../../utils/debug.js'
+import {
+  getAWSRegion,
+  getVertexRegionForModel,
+  isEnvTruthy,
+} from '../../utils/envUtils.js'
+
+/**
+ * Environment variables for different client types:
+ *
+ * Direct API:
+ * - ANTHROPIC_API_KEY: Required for direct API access
+ *
+ * AWS Bedrock:
+ * - AWS credentials configured via aws-sdk defaults
+ * - AWS_REGION or AWS_DEFAULT_REGION: Sets the AWS region for all models (default: us-east-1)
+ * - ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION: Optional. Override AWS region specifically for the small fast model (Haiku)
+ *
+ * Foundry (Azure):
+ * - ANTHROPIC_FOUNDRY_RESOURCE: Your Azure resource name (e.g., 'my-resource')
+ *   For the full endpoint: https://{resource}.services.ai.azure.com/anthropic/v1/messages
+ * - ANTHROPIC_FOUNDRY_BASE_URL: Optional. Alternative to resource - provide full base URL directly
+ *   (e.g., 'https://my-resource.services.ai.azure.com')
+ *
+ * Authentication (one of the following):
+ * - ANTHROPIC_FOUNDRY_API_KEY: Your Microsoft Foundry API key (if using API key auth)
+ * - Azure AD authentication: If no API key is provided, uses DefaultAzureCredential
+ *   which supports multiple auth methods (environment variables, managed identity,
+ *   Azure CLI, etc.). See: https://docs.microsoft.com/en-us/javascript/api/@azure/identity
+ *
+ * Vertex AI:
+ * - Model-specific region variables (highest priority):
+ *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for Claude 3.5 Haiku model
+ *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Claude Haiku 4.5 model
+ *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for Claude 3.5 Sonnet model
+ *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for Claude 3.7 Sonnet model
+ * - CLOUD_ML_REGION: Optional. The default GCP region to use for all models
+ *   If specific model region not specified above
+ * - ANTHROPIC_VERTEX_PROJECT_ID: Required. Your GCP project ID
+ * - Standard GCP credentials configured via google-auth-library
+ *
+ * Priority for determining region:
+ * 1. Hardcoded model-specific environment variables
+ * 2. Global CLOUD_ML_REGION variable
+ * 3. Default region from config
+ * 4. Fallback region (us-east5)
+ */
+
+function createStderrLogger(): ClientOptions['logger'] {
+  return {
+    error: (msg, ...args) =>
+      // biome-ignore lint/suspicious/noConsole:: intentional console output -- SDK logger must use console
+      console.error('[Anthropic SDK ERROR]', msg, ...args),
+    // biome-ignore lint/suspicious/noConsole:: intentional console output -- SDK logger must use console
+    warn: (msg, ...args) => console.error('[Anthropic SDK WARN]', msg, ...args),
+    // biome-ignore lint/suspicious/noConsole:: intentional console output -- SDK logger must use console
+    info: (msg, ...args) => console.error('[Anthropic SDK INFO]', msg, ...args),
+    debug: (msg, ...args) =>
+      // biome-ignore lint/suspicious/noConsole:: intentional console output -- SDK logger must use console
+      console.error('[Anthropic SDK DEBUG]', msg, ...args),
+  }
+}
+
+export async function getAnthropicClient({
+  apiKey,
+  maxRetries,
+
+// ... 已截断（共 390 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/services/api/claude.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import type {
+  BetaContentBlock,
+  BetaContentBlockParam,
+  BetaImageBlockParam,
+  BetaJSONOutputFormat,
+  BetaMessage,
+  BetaMessageDeltaUsage,
+  BetaMessageStreamParams,
+  BetaOutputConfig,
+  BetaRawMessageStreamEvent,
+  BetaRequestDocumentBlock,
+  BetaStopReason,
+  BetaToolChoiceAuto,
+  BetaToolChoiceTool,
+  BetaToolResultBlockParam,
+  BetaToolUnion,
+  BetaUsage,
+  BetaMessageParam as MessageParam,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
+import { randomUUID } from 'crypto'
+import {
+  getAPIProvider,
+  isFirstPartyAnthropicBaseUrl,
+} from 'src/utils/model/providers.js'
+import {
+  getAttributionHeader,
+  getCLISyspromptPrefix,
+} from '../../constants/system.js'
+import {
+  getEmptyToolPermissionContext,
+  type QueryChainTracking,
+  type Tool,
+  type ToolPermissionContext,
+  type Tools,
+  toolMatchesName,
+} from '../../Tool.js'
+import type { AgentDefinition } from '../../tools/AgentTool/loadAgentsDir.js'
+import {
+  type ConnectorTextBlock,
+  type ConnectorTextDelta,
+  isConnectorTextBlock,
+} from '../../types/connectorText.js'
+import type {
+  AssistantMessage,
+  Message,
+  StreamEvent,
+  SystemAPIErrorMessage,
+  UserMessage,
+} from '../../types/message.js'
+import {
+  type CacheScope,
+  logAPIPrefix,
+  splitSysPromptPrefix,
+  toolToAPISchema,
+} from '../../utils/api.js'
+import { getOauthAccountInfo } from '../../utils/auth.js'
+import {
+  getBedrockExtraBodyParamsBetas,
+  getMergedBetas,
+  getModelBetas,
+} from '../../utils/betas.js'
+import { getOrCreateUserID } from '../../utils/config.js'
+import {
+  CAPPED_DEFAULT_MAX_TOKENS,
+  getModelMaxOutputTokens,
+  getSonnet1mExpTreatmentEnabled,
+} from '../../utils/context.js'
+import { resolveAppliedEffort } from '../../utils/effort.js'
+import { isEnvTruthy } from '../../utils/envUtils.js'
+import { errorMessage } from '../../utils/errors.js'
+import { computeFingerprintFromMessages } from '../../utils/fingerprint.js'
+import { captureAPIRequest, logError } from '../../utils/log.js'
+import {
+  createAssistantAPIErrorMessage,
+  createUserMessage,
+  ensureToolResultPairing,
+  normalizeContentFromAPI,
+  normalizeMessagesForAPI,
+  stripAdvisorBlocks,
+  stripCallerFieldFromAssistantMessage,
+  stripToolReferenceBlocksFromUserMessage,
+} from '../../utils/messages.js'
+import {
+  getDefaultOpusModel,
+  getDefaultSonnetModel,
+  getSmallFastModel,
+  isNonCustomOpusModel,
+} from '../../utils/model/model.js'
+
+// ... 已截断（共 3420 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-3': String.raw`// 学习引导: src/services/api/errors.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import {
+  APIConnectionError,
+  APIConnectionTimeoutError,
+  APIError,
+} from '@anthropic-ai/sdk'
+import type {
+  BetaMessage,
+  BetaStopReason,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { AFK_MODE_BETA_HEADER } from 'src/constants/betas.js'
+import type { SDKAssistantMessageError } from 'src/entrypoints/agentSdkTypes.js'
+import type {
+  AssistantMessage,
+  Message,
+  UserMessage,
+} from 'src/types/message.js'
+import {
+  getAnthropicApiKeyWithSource,
+  getClaudeAIOAuthTokens,
+  getOauthAccountInfo,
+  isClaudeAISubscriber,
+} from 'src/utils/auth.js'
+import {
+  createAssistantAPIErrorMessage,
+  NO_RESPONSE_REQUESTED,
+} from 'src/utils/messages.js'
+import {
+  getDefaultMainLoopModelSetting,
+  isNonCustomOpusModel,
+} from 'src/utils/model/model.js'
+import { getModelStrings } from 'src/utils/model/modelStrings.js'
+import { getAPIProvider } from 'src/utils/model/providers.js'
+import { getIsNonInteractiveSession } from '../../bootstrap/state.js'
+import {
+  API_PDF_MAX_PAGES,
+  PDF_TARGET_RAW_SIZE,
+} from '../../constants/apiLimits.js'
+import { isEnvTruthy } from '../../utils/envUtils.js'
+import { formatFileSize } from '../../utils/format.js'
+import { ImageResizeError } from '../../utils/imageResizer.js'
+import { ImageSizeError } from '../../utils/imageValidation.js'
+import {
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  logEvent,
+} from '../analytics/index.js'
+import {
+  type ClaudeAILimits,
+  getRateLimitErrorMessage,
+  type OverageDisabledReason,
+} from '../claudeAiLimits.js'
+import { shouldProcessRateLimits } from '../rateLimitMocking.js' // Used for /mock-limits command
+import { extractConnectionErrorDetails, formatAPIError } from './errorUtils.js'
+
+export const API_ERROR_MESSAGE_PREFIX = 'API Error'
+
+export function startsWithApiErrorPrefix(text: string): boolean {
+  return (
+    text.startsWith(API_ERROR_MESSAGE_PREFIX) ||
+    text.startsWith(\`Please run /login · \${API_ERROR_MESSAGE_PREFIX}\`)
+  )
+}
+export const PROMPT_TOO_LONG_ERROR_MESSAGE = 'Prompt is too long'
+
+export function isPromptTooLongMessage(msg: AssistantMessage): boolean {
+  if (!msg.isApiErrorMessage) {
+    return false
+  }
+  const content = msg.message.content
+  if (!Array.isArray(content)) {
+    return false
+  }
+  return content.some(
+    block =>
+      block.type === 'text' &&
+      block.text.startsWith(PROMPT_TOO_LONG_ERROR_MESSAGE),
+  )
+}
+
+/**
+ * Parse actual/limit token counts from a raw prompt-too-long API error
+ * message like "prompt is too long: 137500 tokens > 135000 maximum".
+ * The raw string may be wrapped in SDK prefixes or JSON envelopes, or
+ * have different casing (Vertex), so this is intentionally lenient.
+ */
+export function parsePromptTooLongTokenCounts(rawMessage: string): {
+  actualTokens: number | undefined
+  limitTokens: number | undefined
+} {
+  const match = rawMessage.match(
+    /prompt is too long[^0-9]*(\d+)\s*tokens?\s*>\s*(\d+)/i,
+
+// ... 已截断（共 1208 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-4': String.raw`// 学习引导: src/services/api/usage.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import axios from 'axios'
+import { getOauthConfig } from '../../constants/oauth.js'
+import {
+  getClaudeAIOAuthTokens,
+  hasProfileScope,
+  isClaudeAISubscriber,
+} from '../../utils/auth.js'
+import { getAuthHeaders } from '../../utils/http.js'
+import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
+import { isOAuthTokenExpired } from '../oauth/client.js'
+
+export type RateLimit = {
+  utilization: number | null // a percentage from 0 to 100
+  resets_at: string | null // ISO 8601 timestamp
+}
+
+export type ExtraUsage = {
+  is_enabled: boolean
+  monthly_limit: number | null
+  used_credits: number | null
+  utilization: number | null
+}
+
+export type Utilization = {
+  five_hour?: RateLimit | null
+  seven_day?: RateLimit | null
+  seven_day_oauth_apps?: RateLimit | null
+  seven_day_opus?: RateLimit | null
+  seven_day_sonnet?: RateLimit | null
+  extra_usage?: ExtraUsage | null
+}
+
+export async function fetchUtilization(): Promise<Utilization | null> {
+  if (!isClaudeAISubscriber() || !hasProfileScope()) {
+    return {}
+  }
+
+  // Skip API call if OAuth token is expired to avoid 401 errors
+  const tokens = getClaudeAIOAuthTokens()
+  if (tokens && isOAuthTokenExpired(tokens.expiresAt)) {
+    return null
+  }
+
+  const authResult = getAuthHeaders()
+  if (authResult.error) {
+    throw new Error(\`Auth error: \${authResult.error}\`)
+  }
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'User-Agent': getClaudeCodeUserAgent(),
+    ...authResult.headers,
+  }
+
+  const url = \`\${getOauthConfig().BASE_API_URL}/api/oauth/usage\`
+
+  const response = await axios.get<Utilization>(url, {
+    headers,
+    timeout: 5000, // 5 second timeout
+  })
+
+  return response.data
+}
+`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,11 +486,67 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/api/client.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/api/claude.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/api/errors.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/api/usage.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/api/client.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/api/claude.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/api/errors.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/api/usage.ts</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

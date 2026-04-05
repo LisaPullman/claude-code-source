@@ -9,14 +9,545 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/services/mcp/client.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { feature } from 'bun:bundle'
+import type {
+  Base64ImageSource,
+  ContentBlockParam,
+  MessageParam,
+} from '@anthropic-ai/sdk/resources/index.mjs'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import {
+  SSEClientTransport,
+  type SSEClientTransportOptions,
+} from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import {
+  StreamableHTTPClientTransport,
+  type StreamableHTTPClientTransportOptions,
+} from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import {
+  createFetchWithInit,
+  type FetchLike,
+  type Transport,
+} from '@modelcontextprotocol/sdk/shared/transport.js'
+import {
+  CallToolResultSchema,
+  ElicitRequestSchema,
+  type ElicitRequestURLParams,
+  type ElicitResult,
+  ErrorCode,
+  type JSONRPCMessage,
+  type ListPromptsResult,
+  ListPromptsResultSchema,
+  ListResourcesResultSchema,
+  ListRootsRequestSchema,
+  type ListToolsResult,
+  ListToolsResultSchema,
+  McpError,
+  type PromptMessage,
+  type ResourceLink,
+} from '@modelcontextprotocol/sdk/types.js'
+import mapValues from 'lodash-es/mapValues.js'
+import memoize from 'lodash-es/memoize.js'
+import zipObject from 'lodash-es/zipObject.js'
+import pMap from 'p-map'
+import { getOriginalCwd, getSessionId } from '../../bootstrap/state.js'
+import type { Command } from '../../commands.js'
+import { getOauthConfig } from '../../constants/oauth.js'
+import { PRODUCT_URL } from '../../constants/product.js'
+import type { AppState } from '../../state/AppState.js'
+import {
+  type Tool,
+  type ToolCallProgress,
+  toolMatchesName,
+} from '../../Tool.js'
+import { ListMcpResourcesTool } from '../../tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
+import { type MCPProgress, MCPTool } from '../../tools/MCPTool/MCPTool.js'
+import { createMcpAuthTool } from '../../tools/McpAuthTool/McpAuthTool.js'
+import { ReadMcpResourceTool } from '../../tools/ReadMcpResourceTool/ReadMcpResourceTool.js'
+import { createAbortController } from '../../utils/abortController.js'
+import { count } from '../../utils/array.js'
+import {
+  checkAndRefreshOAuthTokenIfNeeded,
+  getClaudeAIOAuthTokens,
+  handleOAuth401Error,
+} from '../../utils/auth.js'
+import { registerCleanup } from '../../utils/cleanupRegistry.js'
+import { detectCodeIndexingFromMcpServerName } from '../../utils/codeIndexing.js'
+import { logForDebugging } from '../../utils/debug.js'
+import { isEnvDefinedFalsy, isEnvTruthy } from '../../utils/envUtils.js'
+import {
+  errorMessage,
+  TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+} from '../../utils/errors.js'
+import { getMCPUserAgent } from '../../utils/http.js'
+import { maybeNotifyIDEConnected } from '../../utils/ide.js'
+import { maybeResizeAndDownsampleImageBuffer } from '../../utils/imageResizer.js'
+import { logMCPDebug, logMCPError } from '../../utils/log.js'
+import {
+  getBinaryBlobSavedMessage,
+  getFormatDescription,
+  getLargeOutputInstructions,
+  persistBinaryContent,
+} from '../../utils/mcpOutputStorage.js'
+import {
+  getContentSizeEstimate,
+  type MCPToolResult,
+  mcpContentNeedsTruncation,
+  truncateMcpContentIfNeeded,
+} from '../../utils/mcpValidation.js'
+import { WebSocketTransport } from '../../utils/mcpWebSocketTransport.js'
+import { memoizeWithLRU } from '../../utils/memoize.js'
+import { getWebSocketTLSOptions } from '../../utils/mtls.js'
+
+// ... 已截断（共 3349 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/services/mcp/config.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { feature } from 'bun:bundle'
+import { chmod, open, rename, stat, unlink } from 'fs/promises'
+import mapValues from 'lodash-es/mapValues.js'
+import memoize from 'lodash-es/memoize.js'
+import { dirname, join, parse } from 'path'
+import { getPlatform } from 'src/utils/platform.js'
+import type { PluginError } from '../../types/plugin.js'
+import { getPluginErrorMessage } from '../../types/plugin.js'
+import { isClaudeInChromeMCPServer } from '../../utils/claudeInChrome/common.js'
+import {
+  getCurrentProjectConfig,
+  getGlobalConfig,
+  saveCurrentProjectConfig,
+  saveGlobalConfig,
+} from '../../utils/config.js'
+import { getCwd } from '../../utils/cwd.js'
+import { logForDebugging } from '../../utils/debug.js'
+import { getErrnoCode } from '../../utils/errors.js'
+import { getFsImplementation } from '../../utils/fsOperations.js'
+import { safeParseJSON } from '../../utils/json.js'
+import { logError } from '../../utils/log.js'
+import { getPluginMcpServers } from '../../utils/plugins/mcpPluginIntegration.js'
+import { loadAllPluginsCacheOnly } from '../../utils/plugins/pluginLoader.js'
+import { isSettingSourceEnabled } from '../../utils/settings/constants.js'
+import { getManagedFilePath } from '../../utils/settings/managedPath.js'
+import { isRestrictedToPluginOnly } from '../../utils/settings/pluginOnlyPolicy.js'
+import {
+  getInitialSettings,
+  getSettingsForSource,
+} from '../../utils/settings/settings.js'
+import {
+  isMcpServerCommandEntry,
+  isMcpServerNameEntry,
+  isMcpServerUrlEntry,
+  type SettingsJson,
+} from '../../utils/settings/types.js'
+import type { ValidationError } from '../../utils/settings/validation.js'
+import { jsonStringify } from '../../utils/slowOperations.js'
+import {
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  logEvent,
+} from '../analytics/index.js'
+import { fetchClaudeAIMcpConfigsIfEligible } from './claudeai.js'
+import { expandEnvVarsInString } from './envExpansion.js'
+import {
+  type ConfigScope,
+  type McpHTTPServerConfig,
+  type McpJsonConfig,
+  McpJsonConfigSchema,
+  type McpServerConfig,
+  McpServerConfigSchema,
+  type McpSSEServerConfig,
+  type McpStdioServerConfig,
+  type McpWebSocketServerConfig,
+  type ScopedMcpServerConfig,
+} from './types.js'
+import { getProjectMcpServerStatus } from './utils.js'
+
+/**
+ * Get the path to the managed MCP configuration file
+ */
+export function getEnterpriseMcpFilePath(): string {
+  return join(getManagedFilePath(), 'managed-mcp.json')
+}
+
+/**
+ * Internal utility: Add scope to server configs
+ */
+function addScopeToServers(
+  servers: Record<string, McpServerConfig> | undefined,
+  scope: ConfigScope,
+): Record<string, ScopedMcpServerConfig> {
+  if (!servers) {
+    return {}
+  }
+  const scopedServers: Record<string, ScopedMcpServerConfig> = {}
+  for (const [name, config] of Object.entries(servers)) {
+    scopedServers[name] = { ...config, scope }
+  }
+  return scopedServers
+}
+
+/**
+ * Internal utility: Write MCP config to .mcp.json file.
+ * Preserves file permissions and flushes to disk before rename.
+ * Uses the original path for rename (does not follow symlinks).
+ */
+async function writeMcpjsonFile(config: McpJsonConfig): Promise<void> {
+  const mcpJsonPath = join(getCwd(), '.mcp.json')
+
+
+// ... 已截断（共 1579 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-3': String.raw`// 学习引导: src/services/mcp/types.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import type { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import type {
+  Resource,
+  ServerCapabilities,
+} from '@modelcontextprotocol/sdk/types.js'
+import { z } from 'zod/v4'
+import { lazySchema } from '../../utils/lazySchema.js'
+
+// Configuration schemas and types
+export const ConfigScopeSchema = lazySchema(() =>
+  z.enum([
+    'local',
+    'user',
+    'project',
+    'dynamic',
+    'enterprise',
+    'claudeai',
+    'managed',
+  ]),
+)
+export type ConfigScope = z.infer<ReturnType<typeof ConfigScopeSchema>>
+
+export const TransportSchema = lazySchema(() =>
+  z.enum(['stdio', 'sse', 'sse-ide', 'http', 'ws', 'sdk']),
+)
+export type Transport = z.infer<ReturnType<typeof TransportSchema>>
+
+export const McpStdioServerConfigSchema = lazySchema(() =>
+  z.object({
+    type: z.literal('stdio').optional(), // Optional for backwards compatibility
+    command: z.string().min(1, 'Command cannot be empty'),
+    args: z.array(z.string()).default([]),
+    env: z.record(z.string(), z.string()).optional(),
+  }),
+)
+
+// Cross-App Access (XAA / SEP-990): just a per-server flag. IdP connection
+// details (issuer, clientId, callbackPort) come from settings.xaaIdp — configured
+// once, shared across all XAA-enabled servers. clientId/clientSecret (parent
+// oauth config + keychain slot) are for the MCP server's AS.
+const McpXaaConfigSchema = lazySchema(() => z.boolean())
+
+const McpOAuthConfigSchema = lazySchema(() =>
+  z.object({
+    clientId: z.string().optional(),
+    callbackPort: z.number().int().positive().optional(),
+    authServerMetadataUrl: z
+      .string()
+      .url()
+      .startsWith('https://', {
+        message: 'authServerMetadataUrl must use https://',
+      })
+      .optional(),
+    xaa: McpXaaConfigSchema().optional(),
+  }),
+)
+
+export const McpSSEServerConfigSchema = lazySchema(() =>
+  z.object({
+    type: z.literal('sse'),
+    url: z.string(),
+    headers: z.record(z.string(), z.string()).optional(),
+    headersHelper: z.string().optional(),
+    oauth: McpOAuthConfigSchema().optional(),
+  }),
+)
+
+// Internal-only server type for IDE extensions
+export const McpSSEIDEServerConfigSchema = lazySchema(() =>
+  z.object({
+    type: z.literal('sse-ide'),
+    url: z.string(),
+    ideName: z.string(),
+    ideRunningInWindows: z.boolean().optional(),
+  }),
+)
+
+// Internal-only server type for IDE extensions
+export const McpWebSocketIDEServerConfigSchema = lazySchema(() =>
+  z.object({
+    type: z.literal('ws-ide'),
+    url: z.string(),
+    ideName: z.string(),
+    authToken: z.string().optional(),
+    ideRunningInWindows: z.boolean().optional(),
+  }),
+)
+
+export const McpHTTPServerConfigSchema = lazySchema(() =>
+  z.object({
+
+// ... 已截断（共 259 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-4': String.raw`// 学习引导: src/services/mcp/auth.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import {
+  discoverAuthorizationServerMetadata,
+  discoverOAuthServerInfo,
+  type OAuthClientProvider,
+  type OAuthDiscoveryState,
+  auth as sdkAuth,
+  refreshAuthorization as sdkRefreshAuthorization,
+} from '@modelcontextprotocol/sdk/client/auth.js'
+import {
+  InvalidGrantError,
+  OAuthError,
+  ServerError,
+  TemporarilyUnavailableError,
+  TooManyRequestsError,
+} from '@modelcontextprotocol/sdk/server/auth/errors.js'
+import {
+  type AuthorizationServerMetadata,
+  type OAuthClientInformation,
+  type OAuthClientInformationFull,
+  type OAuthClientMetadata,
+  OAuthErrorResponseSchema,
+  OAuthMetadataSchema,
+  type OAuthTokens,
+  OAuthTokensSchema,
+} from '@modelcontextprotocol/sdk/shared/auth.js'
+import type { FetchLike } from '@modelcontextprotocol/sdk/shared/transport.js'
+import axios from 'axios'
+import { createHash, randomBytes, randomUUID } from 'crypto'
+import { mkdir } from 'fs/promises'
+import { createServer, type Server } from 'http'
+import { join } from 'path'
+import { parse } from 'url'
+import xss from 'xss'
+import { MCP_CLIENT_METADATA_URL } from '../../constants/oauth.js'
+import { openBrowser } from '../../utils/browser.js'
+import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { errorMessage, getErrnoCode } from '../../utils/errors.js'
+import * as lockfile from '../../utils/lockfile.js'
+import { logMCPDebug } from '../../utils/log.js'
+import { getPlatform } from '../../utils/platform.js'
+import { getSecureStorage } from '../../utils/secureStorage/index.js'
+import { clearKeychainCache } from '../../utils/secureStorage/macOsKeychainHelpers.js'
+import type { SecureStorageData } from '../../utils/secureStorage/types.js'
+import { sleep } from '../../utils/sleep.js'
+import { jsonParse, jsonStringify } from '../../utils/slowOperations.js'
+import { logEvent } from '../analytics/index.js'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../analytics/metadata.js'
+import { buildRedirectUri, findAvailablePort } from './oauthPort.js'
+import type { McpHTTPServerConfig, McpSSEServerConfig } from './types.js'
+import { getLoggingSafeMcpBaseUrl } from './utils.js'
+import { performCrossAppAccess, XaaTokenExchangeError } from './xaa.js'
+import {
+  acquireIdpIdToken,
+  clearIdpIdToken,
+  discoverOidc,
+  getCachedIdpIdToken,
+  getIdpClientSecret,
+  getXaaIdpSettings,
+  isXaaEnabled,
+} from './xaaIdpLogin.js'
+
+/**
+ * Timeout for individual OAuth requests (metadata discovery, token refresh, etc.)
+ */
+const AUTH_REQUEST_TIMEOUT_MS = 30000
+
+/**
+ * Failure reasons for the \`tengu_mcp_oauth_refresh_failure\` event. Values
+ * are emitted to analytics — keep them stable (do not rename; add new ones).
+ */
+type MCPRefreshFailureReason =
+  | 'metadata_discovery_failed'
+  | 'no_client_info'
+  | 'no_tokens_returned'
+  | 'invalid_grant'
+  | 'transient_retries_exhausted'
+  | 'request_failed'
+
+/**
+ * Failure reasons for the \`tengu_mcp_oauth_flow_error\` event. Values are
+ * emitted to analytics for attribution in BigQuery. Keep stable (do not
+ * rename; add new ones).
+ */
+type MCPOAuthFlowErrorReason =
+  | 'cancelled'
+  | 'timeout'
+  | 'provider_denied'
+  | 'state_mismatch'
+  | 'port_unavailable'
+  | 'sdk_auth_failed'
+
+// ... 已截断（共 2466 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-5': String.raw`// 学习引导: src/entrypoints/mcp.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import {
+  CallToolRequestSchema,
+  type CallToolResult,
+  ListToolsRequestSchema,
+  type ListToolsResult,
+  type Tool,
+} from '@modelcontextprotocol/sdk/types.js'
+import { getDefaultAppState } from 'src/state/AppStateStore.js'
+import review from '../commands/review.js'
+import type { Command } from '../commands.js'
+import {
+  findToolByName,
+  getEmptyToolPermissionContext,
+  type ToolUseContext,
+} from '../Tool.js'
+import { getTools } from '../tools.js'
+import { createAbortController } from '../utils/abortController.js'
+import { createFileStateCacheWithSizeLimit } from '../utils/fileStateCache.js'
+import { logError } from '../utils/log.js'
+import { createAssistantMessage } from '../utils/messages.js'
+import { getMainLoopModel } from '../utils/model/model.js'
+import { hasPermissionsToUseTool } from '../utils/permissions/permissions.js'
+import { setCwd } from '../utils/Shell.js'
+import { jsonStringify } from '../utils/slowOperations.js'
+import { getErrorParts } from '../utils/toolErrors.js'
+import { zodToJsonSchema } from '../utils/zodToJsonSchema.js'
+
+type ToolInput = Tool['inputSchema']
+type ToolOutput = Tool['outputSchema']
+
+const MCP_COMMANDS: Command[] = [review]
+
+export async function startMCPServer(
+  cwd: string,
+  debug: boolean,
+  verbose: boolean,
+): Promise<void> {
+  // Use size-limited LRU cache for readFileState to prevent unbounded memory growth
+  // 100 files and 25MB limit should be sufficient for MCP server operations
+  const READ_FILE_STATE_CACHE_SIZE = 100
+  const readFileStateCache = createFileStateCacheWithSizeLimit(
+    READ_FILE_STATE_CACHE_SIZE,
+  )
+  setCwd(cwd)
+  const server = new Server(
+    {
+      name: 'claude/tengu',
+      version: MACRO.VERSION,
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    },
+  )
+
+  server.setRequestHandler(
+    ListToolsRequestSchema,
+    async (): Promise<ListToolsResult> => {
+      // TODO: Also re-expose any MCP tools
+      const toolPermissionContext = getEmptyToolPermissionContext()
+      const tools = getTools(toolPermissionContext)
+      return {
+        tools: await Promise.all(
+          tools.map(async tool => {
+            let outputSchema: ToolOutput | undefined
+            if (tool.outputSchema) {
+              const convertedSchema = zodToJsonSchema(tool.outputSchema)
+              // MCP SDK requires outputSchema to have type: "object" at root level
+              // Skip schemas with anyOf/oneOf at root (from z.union, z.discriminatedUnion, etc.)
+              // See: https://github.com/anthropics/claude-code/issues/8014
+              if (
+                typeof convertedSchema === 'object' &&
+                convertedSchema !== null &&
+                'type' in convertedSchema &&
+                convertedSchema.type === 'object'
+              ) {
+                outputSchema = convertedSchema as ToolOutput
+              }
+            }
+            return {
+              ...tool,
+              description: await tool.prompt({
+                getToolPermissionContext: async () => toolPermissionContext,
+                tools,
+                agents: [],
+              }),
+              inputSchema: zodToJsonSchema(tool.inputSchema) as ToolInput,
+
+// ... 已截断（共 197 行），建议在 VS Code 继续阅读完整文件。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,12 +611,82 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/mcp/client.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/mcp/config.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/mcp/types.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/mcp/auth.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/entrypoints/mcp.ts</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/mcp/client.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/mcp/config.ts</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/mcp/types.ts</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/services/mcp/auth.ts</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/entrypoints/mcp.ts</code>
+        <button onclick="toggleCode('source-5', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-5" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-5"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 

@@ -9,14 +9,183 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 18px; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+        .code-content { display: none; }
+        .code-content.visible { display: block; animation: reveal .25s ease-out; }
+        .source-panel {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0b1220;
+            border-bottom: 1px solid #1f2937;
+            color: #bfdbfe;
+            font-size: 13px;
+        }
+        .source-body {
+            margin: 0;
+            padding: 14px;
+            max-height: 380px;
+            overflow: auto;
+            line-height: 1.55;
+            font-size: 13px;
+            white-space: pre;
+        }
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
-        function toggleCode(id) {
+        const SOURCE_SNIPPETS = {
+            'source-1': String.raw`// 学习引导: src/commands.ts
+// 1) 先看导入与文件职责
+// 2) 再看主流程和关键函数
+// 3) 最后记录设计决策与疑问
+
+// biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+import addDir from './commands/add-dir/index.js'
+import autofixPr from './commands/autofix-pr/index.js'
+import backfillSessions from './commands/backfill-sessions/index.js'
+import btw from './commands/btw/index.js'
+import goodClaude from './commands/good-claude/index.js'
+import issue from './commands/issue/index.js'
+import feedback from './commands/feedback/index.js'
+import clear from './commands/clear/index.js'
+import color from './commands/color/index.js'
+import commit from './commands/commit.js'
+import copy from './commands/copy/index.js'
+import desktop from './commands/desktop/index.js'
+import commitPushPr from './commands/commit-push-pr.js'
+import compact from './commands/compact/index.js'
+import config from './commands/config/index.js'
+import { context, contextNonInteractive } from './commands/context/index.js'
+import cost from './commands/cost/index.js'
+import diff from './commands/diff/index.js'
+import ctx_viz from './commands/ctx_viz/index.js'
+import doctor from './commands/doctor/index.js'
+import memory from './commands/memory/index.js'
+import help from './commands/help/index.js'
+import ide from './commands/ide/index.js'
+import init from './commands/init.js'
+import initVerifiers from './commands/init-verifiers.js'
+import keybindings from './commands/keybindings/index.js'
+import login from './commands/login/index.js'
+import logout from './commands/logout/index.js'
+import installGitHubApp from './commands/install-github-app/index.js'
+import installSlackApp from './commands/install-slack-app/index.js'
+import breakCache from './commands/break-cache/index.js'
+import mcp from './commands/mcp/index.js'
+import mobile from './commands/mobile/index.js'
+import onboarding from './commands/onboarding/index.js'
+import pr_comments from './commands/pr_comments/index.js'
+import releaseNotes from './commands/release-notes/index.js'
+import rename from './commands/rename/index.js'
+import resume from './commands/resume/index.js'
+import review, { ultrareview } from './commands/review.js'
+import session from './commands/session/index.js'
+import share from './commands/share/index.js'
+import skills from './commands/skills/index.js'
+import status from './commands/status/index.js'
+import tasks from './commands/tasks/index.js'
+import teleport from './commands/teleport/index.js'
+/* eslint-disable @typescript-eslint/no-require-imports */
+const agentsPlatform =
+  process.env.USER_TYPE === 'ant'
+    ? require('./commands/agents-platform/index.js').default
+    : null
+/* eslint-enable @typescript-eslint/no-require-imports */
+import securityReview from './commands/security-review.js'
+import bughunter from './commands/bughunter/index.js'
+import terminalSetup from './commands/terminalSetup/index.js'
+import usage from './commands/usage/index.js'
+import theme from './commands/theme/index.js'
+import vim from './commands/vim/index.js'
+import { feature } from 'bun:bundle'
+// Dead code elimination: conditional imports
+/* eslint-disable @typescript-eslint/no-require-imports */
+const proactive =
+  feature('PROACTIVE') || feature('KAIROS')
+    ? require('./commands/proactive.js').default
+    : null
+const briefCommand =
+  feature('KAIROS') || feature('KAIROS_BRIEF')
+    ? require('./commands/brief.js').default
+    : null
+const assistantCommand = feature('KAIROS')
+  ? require('./commands/assistant/index.js').default
+  : null
+const bridge = feature('BRIDGE_MODE')
+  ? require('./commands/bridge/index.js').default
+  : null
+const remoteControlServerCommand =
+  feature('DAEMON') && feature('BRIDGE_MODE')
+    ? require('./commands/remoteControlServer/index.js').default
+    : null
+const voiceCommand = feature('VOICE_MODE')
+  ? require('./commands/voice/index.js').default
+  : null
+const forceSnip = feature('HISTORY_SNIP')
+  ? require('./commands/force-snip.js').default
+  : null
+const workflowsCmd = feature('WORKFLOW_SCRIPTS')
+  ? (
+      require('./commands/workflows/index.js') as typeof import('./commands/workflows/index.js')
+    ).default
+  : null
+
+// ... 已截断（共 755 行），建议在 VS Code 继续阅读完整文件。`,
+            'source-2': String.raw`// 学习引导: src/commands/clear/（目录）
+// 目录预览（最多 30 项）:
+- caches.ts
+- clear.ts
+- conversation.ts
+- index.ts
+
+// 建议: 从命名最关键的 1-2 个文件开始，沿调用链追踪。`,
+            'source-3': String.raw`// 学习引导: src/commands/help/（目录）
+// 目录预览（最多 30 项）:
+- help.tsx
+- index.ts
+
+// 建议: 从命名最关键的 1-2 个文件开始，沿调用链追踪。`,
+            'source-4': String.raw`// 学习引导: src/commands/config/（目录）
+// 目录预览（最多 30 项）:
+- config.tsx
+- index.ts
+
+// 建议: 从命名最关键的 1-2 个文件开始，沿调用链追踪。`,
+            'source-5': String.raw`// 学习引导: src/commands/model/（目录）
+// 目录预览（最多 30 项）:
+- index.ts
+- model.tsx
+
+// 建议: 从命名最关键的 1-2 个文件开始，沿调用链追踪。`
+        };
+
+        function toggleCode(id, button) {
             const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
+            const pre = element ? element.querySelector('pre[data-source-id]') : null;
+
+            if (pre && !pre.dataset.loaded) {
+                const sourceId = pre.dataset.sourceId;
+                pre.textContent = SOURCE_SNIPPETS[sourceId] || '暂未找到源码片段';
+                pre.dataset.loaded = '1';
+            }
+
+            const isVisible = element.classList.toggle('visible');
+            if (button) {
+                button.textContent = isVisible ? '收起源码' : '查看源码';
+                button.setAttribute('aria-expanded', String(isVisible));
             }
         }
 
@@ -80,12 +249,82 @@
                     <li>• 完成后点击「标记完成」记录学习进度</li>
                 </ul>
             </div>
-            <div class="space-y-3">
-                <div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/commands.ts</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/commands/clear/</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/commands/help/</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/commands/config/</code></div>
-<div class="bg-gray-50 p-4 rounded-lg"><code class="text-blue-600 font-mono">src/commands/model/</code></div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/commands.ts</code>
+        <button onclick="toggleCode('source-1', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-1" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-1"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/commands/clear/</code>
+        <button onclick="toggleCode('source-2', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-2" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-2"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/commands/help/</code>
+        <button onclick="toggleCode('source-3', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-3" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-3"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/commands/config/</code>
+        <button onclick="toggleCode('source-4', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-4" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-4"></pre>
+        </div>
+    </div>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 flex justify-between items-center gap-3">
+        <code class="text-purple-600 font-mono font-medium break-all">src/commands/model/</code>
+        <button onclick="toggleCode('source-5', this)" aria-expanded="false" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 transition whitespace-nowrap">查看源码</button>
+    </div>
+    <div id="source-5" class="code-content">
+        <div class="source-panel">
+            <div class="source-header">
+                <span>源码预览（含中文学习注释）</span>
+                <span>建议先看注释，再读代码</span>
+            </div>
+            <pre class="source-body code-embed" data-source-id="source-5"></pre>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 
