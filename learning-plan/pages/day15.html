@@ -6,9 +6,47 @@
     <title>第 15 天：LSP 集成 | Claude Code 30天学习计划</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }        .code-embed { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     </style>
+    <script>
+        function toggleCode(id) {
+            const element = document.getElementById(id);
+            if (element.classList.contains('hidden')) {
+                element.classList.remove('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dayNumber = window.location.pathname.match(/day(\d+)/)[1];
+            const completed = localStorage.getItem(`day-${dayNumber}-completed`);
+            if (completed === 'true') {
+                document.getElementById('complete-btn').classList.add('bg-green-600');
+                document.getElementById('complete-btn').classList.remove('bg-gray-600');
+                document.getElementById('complete-btn').textContent = '✓ 已完成';
+            }
+        });
+
+        function toggleComplete() {
+            const dayNumber = window.location.pathname.match(/day(\d+)/)[1];
+            const btn = document.getElementById('complete-btn');
+            const current = localStorage.getItem(`day-${dayNumber}-completed`);
+            if (current === 'true') {
+                localStorage.setItem(`day-${dayNumber}-completed`, 'false');
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-gray-600');
+                btn.textContent = '标记完成';
+            } else {
+                localStorage.setItem(`day-${dayNumber}-completed`, 'true');
+                btn.classList.add('bg-green-600');
+                btn.classList.remove('bg-gray-600');
+                btn.textContent = '✓ 已完成';
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <header class="gradient-bg text-white py-8">
@@ -31,6 +69,17 @@
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📂 阅读文件</h2>
+            <!-- 阅读引导说明 -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                <p class="text-blue-800 font-medium mb-2">📖 阅读指南</p>
+                <ul class="text-blue-700 text-sm space-y-1">
+                    <li>• 每个文件按标注顺序阅读</li>
+                    <li>• 先快速浏览整体结构，再深入细节</li>
+                    <li>• 关注代码中的设计决策，而不只是实现</li>
+                    <li>• 遇到不懂的地方先记录，后续学习会逐步展开</li>
+                    <li>• 完成后点击「标记完成」记录学习进度</li>
+                </ul>
+            </div>
             <div class="space-y-3">
                 <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/LSPClient.ts</code></div>
 <div class="bg-gray-50 p-4 rounded-lg"><code class="text-green-600 font-mono">src/services/lsp/LSPServerManager.ts</code></div>
@@ -67,9 +116,14 @@
             </div>
         </div>
 
-        <div class="flex justify-between mt-8">
-            <a href="day14.html" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">← 上一天</a>
-            <a href="day16.html" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">下一天 →</a>
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
+            <a href="../index.html" class="text-gray-500 hover:text-gray-700">← 返回首页</a>
+            <div class="flex gap-3">
+                <button id="complete-btn" onclick="toggleComplete()" class="bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition">
+                    标记完成
+                </button>
+                <a href="day16.html" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">下一天 →</a>
+            </div>
         </div>
     </main>
 
