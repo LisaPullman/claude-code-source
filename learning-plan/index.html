@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 源码 30 天学习计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="gradient-bg text-white py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-4">Claude Code 源码 30 天学习计划</h1>
+            <p class="text-xl opacity-90">深入学习 Anthropic Agentic 编程工具的架构设计与实现</p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-lg font-semibold mb-2 text-purple-600">📚 计划目标</h3>
+                <ul class="text-gray-600 space-y-2">
+                    <li>✓ 理解完整请求生命周期</li>
+                    <li>✓ 掌握核心引擎设计</li>
+                    <li>✓ 学习扩展机制开发</li>
+                    <li>✓ 具备定制开发能力</li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-lg font-semibold mb-2 text-blue-600">⏱️ 学习节奏</h3>
+                <ul class="text-gray-600 space-y-2">
+                    <li>每天 90-150 分钟</li>
+                    <li>20分钟概览 + 60分钟精读</li>
+                    <li>20分钟实验 + 10分钟总结</li>
+                    <li>每周复盘巩固</li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-lg font-semibold mb-2 text-green-600">🎯 最终能力</h3>
+                <ul class="text-gray-600 space-y-2">
+                    <li>架构设计理解</li>
+                    <li>代码快速导航</li>
+                    <li>定制功能开发</li>
+                    <li>问题定位调试</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">学习进度</h2>
+        
+        <div class="space-y-8">
+            <!-- 第一阶段 -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-xl font-bold text-purple-700 mb-4">第一阶段：项目概览与架构理解（第 1-5 天）</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <a href="pages/day1.html" class="card-hover bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-purple-600">01</div>
+                        <div class="text-sm text-gray-600">项目结构与入口</div>
+                    </a>
+                    <a href="pages/day2.html" class="card-hover bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-purple-600">02</div>
+                        <div class="text-sm text-gray-600">初始化流程</div>
+                    </a>
+                    <a href="pages/day3.html" class="card-hover bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-purple-600">03</div>
+                        <div class="text-sm text-gray-600">主 CLI 与 REPL</div>
+                    </a>
+                    <a href="pages/day4.html" class="card-hover bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-purple-600">04</div>
+                        <div class="text-sm text-gray-600">终端 UI 架构</div>
+                    </a>
+                    <a href="pages/day5.html" class="card-hover bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-purple-600">05</div>
+                        <div class="text-sm text-gray-600">阶段总结</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 第二阶段 -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-xl font-bold text-blue-700 mb-4">第二阶段：核心引擎与工具系统（第 6-12 天）</h3>
+                <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+                    <a href="pages/day6.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">06</div>
+                        <div class="text-xs text-gray-600">查询引擎</div>
+                    </a>
+                    <a href="pages/day7.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">07</div>
+                        <div class="text-xs text-gray-600">工具注册</div>
+                    </a>
+                    <a href="pages/day8.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">08</div>
+                        <div class="text-xs text-gray-600">文件操作</div>
+                    </a>
+                    <a href="pages/day9.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">09</div>
+                        <div class="text-xs text-gray-600">执行与搜索</div>
+                    </a>
+                    <a href="pages/day10.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">10</div>
+                        <div class="text-xs text-gray-600">高级工具</div>
+                    </a>
+                    <a href="pages/day11.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">11</div>
+                        <div class="text-xs text-gray-600">命令系统</div>
+                    </a>
+                    <a href="pages/day12.html" class="card-hover bg-blue-50 hover:bg-blue-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-blue-600">12</div>
+                        <div class="text-xs text-gray-600">阶段总结</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 第三阶段 -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-xl font-bold text-green-700 mb-4">第三阶段：服务层与集成（第 13-20 天）</h3>
+                <div class="grid grid-cols-2 md:grid-cols-8 gap-3">
+                    <a href="pages/day13.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">13</div>
+                        <div class="text-xs text-gray-600">API 客户端</div>
+                    </a>
+                    <a href="pages/day14.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">14</div>
+                        <div class="text-xs text-gray-600">MCP 协议</div>
+                    </a>
+                    <a href="pages/day15.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">15</div>
+                        <div class="text-xs text-gray-600">LSP 集成</div>
+                    </a>
+                    <a href="pages/day16.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">16</div>
+                        <div class="text-xs text-gray-600">遥测系统</div>
+                    </a>
+                    <a href="pages/day17.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">17</div>
+                        <div class="text-xs text-gray-600">插件系统</div>
+                    </a>
+                    <a href="pages/day18.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">18</div>
+                        <div class="text-xs text-gray-600">技能系统</div>
+                    </a>
+                    <a href="pages/day19.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">19</div>
+                        <div class="text-xs text-gray-600">成本追踪</div>
+                    </a>
+                    <a href="pages/day20.html" class="card-hover bg-green-50 hover:bg-green-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-green-600">20</div>
+                        <div class="text-xs text-gray-600">阶段总结</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 第四阶段 -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-xl font-bold text-orange-700 mb-4">第四阶段：高级特性与模式（第 21-26 天）</h3>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+                    <a href="pages/day21.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">21</div>
+                        <div class="text-xs text-gray-600">特性开关</div>
+                    </a>
+                    <a href="pages/day22.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">22</div>
+                        <div class="text-xs text-gray-600">状态管理</div>
+                    </a>
+                    <a href="pages/day23.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">23</div>
+                        <div class="text-xs text-gray-600">UI 组件</div>
+                    </a>
+                    <a href="pages/day24.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">24</div>
+                        <div class="text-xs text-gray-600">键盘绑定</div>
+                    </a>
+                    <a href="pages/day25.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">25</div>
+                        <div class="text-xs text-gray-600">数据迁移</div>
+                    </a>
+                    <a href="pages/day26.html" class="card-hover bg-orange-50 hover:bg-orange-100 rounded-lg p-3 text-center transition-all">
+                        <div class="text-xl font-bold text-orange-600">26</div>
+                        <div class="text-xs text-gray-600">阶段总结</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 第五阶段 -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <h3 class="text-xl font-bold text-red-700 mb-4">第五阶段：综合理解与实战（第 27-30 天）</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="pages/day27.html" class="card-hover bg-red-50 hover:bg-red-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-red-600">27</div>
+                        <div class="text-sm text-gray-600">请求生命周期</div>
+                    </a>
+                    <a href="pages/day28.html" class="card-hover bg-red-50 hover:bg-red-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-red-600">28</div>
+                        <div class="text-sm text-gray-600">设计模式总结</div>
+                    </a>
+                    <a href="pages/day29.html" class="card-hover bg-red-50 hover:bg-red-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-red-600">29</div>
+                        <div class="text-sm text-gray-600">代码质量实践</div>
+                    </a>
+                    <a href="pages/day30.html" class="card-hover bg-red-50 hover:bg-red-100 rounded-lg p-4 text-center transition-all">
+                        <div class="text-2xl font-bold text-red-600">30</div>
+                        <div class="text-sm text-gray-600">总结与扩展</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 bg-white rounded-xl p-6 shadow-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">📋 学习建议</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">学习方法</h4>
+                    <ul class="text-gray-600 space-y-1">
+                        <li>• 先整体后局部：先理解架构，再深入具体实现</li>
+                        <li>• 边读边画图：流程图、时序图、架构图能加深理解</li>
+                        <li>• 关注设计决策：不仅是"怎么做"，更要理解"为什么这么做"</li>
+                        <li>• 实际运行项目：观察日志输出，验证理解</li>
+                        <li>• 做笔记：每天记录关键发现和疑问</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">推荐工具</h4>
+                    <ul class="text-gray-600 space-y-1">
+                        <li>• VS Code 或类似 IDE 进行代码导航</li>
+                        <li>• Draw.io 或 Excalidraw 绘制图表</li>
+                        <li>• <code>rg</code> 或 IDE 搜索功能追踪函数调用链</li>
+                        <li>• <code>git log</code> 查看重要文件的提交历史</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-gray-400">Claude Code 源码学习计划 | 基于 30.md 和 30codex.md 整理</p>
+        </div>
+    </footer>
+</body>
+</html>
