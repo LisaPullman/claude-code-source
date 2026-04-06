@@ -195,6 +195,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 技能系统与插件系统的区别？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 两种扩展机制对比：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>技能（Skills）：</strong>纯 Markdown 提示词模板，无代码执行能力</li>
+                        <li><strong>插件（Plugins）：</strong>完整扩展包，可提供 MCP 服务器、命令、钩子</li>
+                        <li><strong>安装位置：</strong>技能在 <code>.claude/skills/*.md</code>；插件在独立目录</li>
+                        <li><strong>安全模型：</strong>技能只影响提示词；插件需要权限审批</li>
+                        <li><strong>适用场景：</strong>技能用于定制行为偏好；插件用于添加新能力</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">技能更轻量，适合用户自定义；插件更强大，需要开发者构建。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何设计一个好的技能提示词？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 技能设计最佳实践：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>单一职责：</strong>每个技能专注一个明确的任务或领域</li>
+                        <li><strong>清晰边界：</strong>说明技能何时使用、何时不使用</li>
+                        <li><strong>示例驱动：</strong>提供具体输入输出示例</li>
+                        <li><strong>约束明确：</strong>指定代码风格、文件结构、禁止操作</li>
+                        <li><strong>可组合：</strong>设计与其他技能/工具协作的接口</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">参考：<code>src/skills/bundled/</code> 内置技能作为模板。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

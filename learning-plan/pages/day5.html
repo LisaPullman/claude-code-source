@@ -167,6 +167,43 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 能否画出完整启动流程？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> Claude Code 的启动流程如下：</p>
+                    <pre class="bg-gray-800 text-green-400 p-3 rounded mt-2 text-xs overflow-x-auto">
+cli.tsx (入口)
+    │
+    ├── 快速路径检查 (--version, --dump-system-prompt 等)
+    │
+    ├── main.tsx (完整 CLI)
+    │   ├── init() - 配置验证、环境变量、遥测初始化
+    │   ├── setup() - 工作目录、hooks、会话状态
+    │   └── launchRepl() - 启动交互式界面
+    │
+    └── REPL (Ink + React)
+        ├── App 组件 (主题、状态管理)
+        └── REPL 组件 (消息处理、用户交互)</pre>
+                    <p class="text-gray-600 text-sm mt-2">关键点：使用 <code>profileCheckpoint()</code> 在各阶段记录性能数据，便于优化。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 各模块职责边界是否清晰？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 是的，项目采用了清晰的分层架构：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>entrypoints/：</strong>入口点，负责参数解析和路由分发</li>
+                        <li><strong>bootstrap/：</strong>全局状态管理，跨模块共享</li>
+                        <li><strong>state/：</strong>React 状态管理，UI 响应式更新</li>
+                        <li><strong>services/：</strong>外部服务集成（API、MCP、LSP）</li>
+                        <li><strong>tools/：</strong>工具实现，每个工具独立目录</li>
+                        <li><strong>utils/：</strong>通用工具函数，无业务逻辑</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">边界清晰的标志：模块间通过类型定义通信，避免循环依赖。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

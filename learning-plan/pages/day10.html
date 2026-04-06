@@ -249,6 +249,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 子代理与主代理如何通信？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> AgentTool 的通信架构：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>上下文传递：</strong>主代理通过 <code>createSubagentContext()</code> 创建子代理上下文</li>
+                        <li><strong>消息流：</strong>子代理的输出通过 <code>yield*</code> 流式返回主代理</li>
+                        <li><strong>状态隔离：</strong>每个子代理有独立的 <code>abortController</code> 和 <code>readFileState</code></li>
+                        <li><strong>进度报告：</strong><code>AgentToolProgress</code> 类型定义进度更新格式</li>
+                        <li><strong>颜色标识：</strong><code>agentColorManager.ts</code> 为不同代理分配显示颜色</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">内存管理：<code>agentMemory.ts</code> 和 <code>agentMemorySnapshot.ts</code> 管理代理间状态持久化。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 技能系统的扩展性如何？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 技能系统支持多层扩展：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>文件系统技能：</strong><code>.claude/skills/*.md</code> 目录中的 Markdown 文件</li>
+                        <li><strong>MCP 技能：</strong>通过 MCP 服务器动态提供技能</li>
+                        <li><strong>内置技能：</strong><code>built-in/</code> 目录中的预定义技能</li>
+                        <li><strong>热重载：</strong><code>loadAgentsDir.ts</code> 监听文件变化自动刷新</li>
+                        <li><strong>技能发现：</strong><code>dynamicSkillDirTriggers</code> 按需加载技能目录</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">技能本质是预定义的提示词模板，通过 <code>SkillTool.ts</code> 注入到对话上下文。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

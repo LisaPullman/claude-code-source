@@ -416,6 +416,36 @@ type State = {
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何准确估算 API 调用成本？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 成本计算模型：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>Token 计数：</strong>从 API 响应 <code>usage</code> 字段获取实际 Token 数</li>
+                        <li><strong>模型定价：</strong><code>MODEL_COSTS</code> 定义每模型的每百万 Token 价格</li>
+                        <li><strong>缓存折扣：</strong>缓存读取 Token 成本约为普通输入的 10%</li>
+                        <li><strong>分类统计：</strong>按模型分别统计 <code>input/output/cache_read/cache_creation</code></li>
+                        <li><strong>会话持久化：</strong><code>saveCurrentSessionCosts()</code> 保存到项目配置</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">核心函数：<code>calculateUSDCost()</code> 在 <code>src/utils/modelCost.ts</code>。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 成本超限时的处理策略？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多级超限处理：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>配额查询：</strong><code>fetchUtilization()</code> 获取 5 小时/7 天用量配额</li>
+                        <li><strong>预警提示：</strong>接近限额时显示警告</li>
+                        <li><strong>降级建议：</strong>推荐使用更便宜的模型或等待重置</li>
+                        <li><strong>硬限制：</strong>企业可配置 <code>maxCost</code> 绝对上限</li>
+                        <li><strong>中断保护：</strong>当前请求完成后再拒绝新请求</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">实现：<code>src/services/claudeAiLimits.ts</code> 的 <code>getRateLimitErrorMessage()</code>。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

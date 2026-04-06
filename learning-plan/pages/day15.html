@@ -585,6 +585,36 @@ export async function getAllLspServers(): Promise<{
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: LSP 如何增强代码理解能力？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> LSP 提供的结构化代码信息：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>定义跳转：</strong><code>textDocument/definition</code> 获取符号定义位置</li>
+                        <li><strong>类型信息：</strong><code>textDocument/hover</code> 获取类型签名和文档</li>
+                        <li><strong>诊断信息：</strong><code>textDocument/publishDiagnostics</code> 获取编译错误/警告</li>
+                        <li><strong>引用查找：</strong><code>textDocument/references</code> 查找符号使用位置</li>
+                        <li><strong>补全建议：</strong><code>textDocument/completion</code> 获取上下文补全</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">通过 <code>LSPDiagnosticRegistry</code> 自动注入诊断到对话上下文。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何处理语言服务器崩溃？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 崩溃恢复机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>崩溃检测：</strong><code>onCrash</code> 回调监听进程非正常退出</li>
+                        <li><strong>状态标记：</strong>设置 <code>startFailed</code> 标志防止无限重启</li>
+                        <li><strong>延迟重试：</strong>崩溃后等待一段时间再尝试重启</li>
+                        <li><strong>优雅降级：</strong>LSP 不可用时回退到基础代码分析</li>
+                        <li><strong>用户通知：</strong>显示崩溃原因和建议（如安装语言服务器）</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">实现：<code>src/services/lsp/LSPClient.ts</code> 的 <code>createLSPClient()</code>。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

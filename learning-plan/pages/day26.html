@@ -167,6 +167,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 能否识别关键设计决策？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 核心设计决策总结：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>编译时特性开关：</strong>Bun <code>feature()</code> 实现零运行时开销的条件功能</li>
+                        <li><strong>双层状态管理：</strong>全局单例 + React 响应式，职责清晰分离</li>
+                        <li><strong>工具权限分层：</strong>预批准 → 检查 → 询问，平衡安全与效率</li>
+                        <li><strong>流式处理优先：</strong>AsyncGenerator 贯穿请求生命周期</li>
+                        <li><strong>MCP 协议抽象：</strong>通过协议标准化实现可插拔能力扩展</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">这些决策使系统在性能、安全、扩展性之间取得平衡。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如果重新设计会做哪些改进？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 潜在改进方向：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>状态管理简化：</strong>考虑引入 Zustand 等轻量状态库减少模板代码</li>
+                        <li><strong>配置分层：</strong>将 bootstrap state 拆分为更细粒度的模块</li>
+                        <li><strong>错误边界：</strong>为 UI 组件添加更完善的错误边界处理</li>
+                        <li><strong>类型收窄：</strong>更多使用 discriminated union 替代可选属性</li>
+                        <li><strong>测试覆盖：</strong>增加集成测试覆盖关键用户路径</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">改进需要权衡迁移成本与收益，谨慎评估。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

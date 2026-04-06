@@ -338,6 +338,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 终端 UI 与 Web UI 的设计差异？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 终端 UI 独特约束：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>布局模型：</strong>无 CSS Box Model，使用 Ink 的 Flexbox 近似实现</li>
+                        <li><strong>尺寸单位：</strong>字符网格（宽高比约 1:2），不是像素</li>
+                        <li><strong>颜色限制：</strong>256 色或 24 位真彩色，无渐变/阴影</li>
+                        <li><strong>输入方式：</strong>键盘为主，无鼠标悬停/点击</li>
+                        <li><strong>渲染方式：</strong>ANSI 转义序列，全屏重绘或差异更新</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">框架：Ink 提供类似 React 的组件模型，但渲染到终端。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何处理终端尺寸变化？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 响应式终端设计：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>尺寸监听：</strong><code>process.stdout.on('resize')</code> 捕获窗口变化</li>
+                        <li><strong>状态同步：</strong>更新 <code>stdout.columns</code> 和 <code>stdout.rows</code></li>
+                        <li><strong>重渲染：</strong>Ink 自动触发组件树重新计算布局</li>
+                        <li><strong>断点设计：</strong>根据宽度切换简洁/完整显示模式</li>
+                        <li><strong>最小宽度：</strong>设置最小支持宽度，低于时显示警告</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">实现：<code>useStdoutDimensions()</code> hook 提供实时尺寸。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

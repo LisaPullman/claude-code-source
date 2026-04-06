@@ -179,6 +179,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何确保迁移的幂等性？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 幂等迁移设计：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>版本标记：</strong>每个迁移记录已应用的版本号</li>
+                        <li><strong>前置检查：</strong>迁移前检查目标状态，已迁移则跳过</li>
+                        <li><strong>条件执行：</strong>仅当检测到旧格式数据时才执行转换</li>
+                        <li><strong>原子操作：</strong>迁移成功后原子性更新版本标记</li>
+                        <li><strong>重复安全：</strong>多次运行迁移脚本产生相同结果</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">示例：<code>migrateSonnet45ToSonnet46.ts</code> 仅迁移 v45 配置。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 迁移失败时的回滚策略？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 安全迁移策略：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>备份机制：</strong>迁移前备份原始配置文件</li>
+                        <li><strong>错误捕获：</strong>迁移失败时记录错误但不阻塞启动</li>
+                        <li><strong>降级运行：</strong>迁移失败时使用默认配置</li>
+                        <li><strong>用户通知：</strong>显示迁移失败警告和手动修复建议</li>
+                        <li><strong>日志记录：</strong>详细记录迁移过程便于诊断</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">原则：宁可降级运行也不丢失用户数据。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

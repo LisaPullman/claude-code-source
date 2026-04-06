@@ -374,6 +374,34 @@ type State = {
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么使用全局单例而非依赖注入？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> Claude Code 选择全局单例模式主要基于以下考虑：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>CLI 场景特殊性：</strong>CLI 是单进程、单会话的，不存在 Web 服务的并发请求隔离需求</li>
+                        <li><strong>启动性能：</strong>全局状态通过 <code>memoize()</code> 缓存，避免重复初始化</li>
+                        <li><strong>跨模块共享：</strong>会话 ID、工作目录、配置等需要在任意位置访问</li>
+                        <li><strong>状态持久化：</strong>使用 <code>bootstrap/state.ts</code> 集中管理，便于调试和序列化</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">代码中明确注释 <code>"DO NOT ADD MORE STATE HERE - BE JUDICIOUS WITH GLOBAL STATE"</code>，强调对全局状态的审慎态度。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 初始化过程中有哪些性能瓶颈？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 根据源码分析，主要瓶颈包括：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>配置验证：</strong><code>enableConfigs()</code> 需要读取并解析多个配置文件</li>
+                        <li><strong>OAuth 令牌获取：</strong>macOS Keychain 读取是同步阻塞操作（~65ms）</li>
+                        <li><strong>MTLS 配置：</strong>TLS 证书加载必须在第一次 TLS 握手前完成</li>
+                        <li><strong>OpenTelemetry 初始化：</strong>延迟加载以避免 ~400KB 的模块开销</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">优化策略：使用 <code>startKeychainPrefetch()</code> 并行预取、<code>applySafeConfigEnvironmentVariables()</code> 分阶段加载配置。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

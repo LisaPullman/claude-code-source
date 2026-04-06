@@ -326,6 +326,32 @@ async function main(): Promise<void> {
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么入口文件要使用快速路径模式？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 快速路径模式（Fast Path）是 CLI 工具的性能优化关键。在 <code>cli.tsx</code> 中，<code>--version</code> 等简单命令直接返回，零模块加载，启动时间几乎为零。这通过以下方式实现：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>延迟加载：</strong>只有需要时才使用 <code>import()</code> 动态加载模块</li>
+                        <li><strong>提前返回：</strong>简单命令在入口处直接处理并 <code>return</code></li>
+                        <li><strong>启动性能分析：</strong>使用 <code>profileCheckpoint()</code> 追踪各阶段耗时</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">这种设计使得 Claude Code 的版本查询可以在毫秒级完成，而完整 REPL 启动需要加载数百个模块。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 特性开关如何影响打包体积？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> Claude Code 使用 Bun 的编译时特性开关（<code>feature()</code> from <code>'bun:bundle'</code>）实现死代码消除（DCE）：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>编译时检查：</strong><code>if (feature('FEATURE_NAME'))</code> 在构建时被求值</li>
+                        <li><strong>代码裁剪：</strong>未启用的特性分支在打包时被完全移除</li>
+                        <li><strong>模块隔离：</strong>特性相关代码通过动态 <code>require()</code> 加载，避免主包膨胀</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">例如，<code>DAEMON</code>、<code>BRIDGE_MODE</code> 等企业级功能不会出现在外部构建中，显著减小了包体积。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

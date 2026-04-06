@@ -171,6 +171,38 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 每种模式的应用场景是什么？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 设计模式应用场景：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>单例模式：</strong><code>bootstrap/state.ts</code> 全局状态，确保进程内唯一</li>
+                        <li><strong>工厂模式：</strong><code>createTool()</code> 根据名称创建工具实例</li>
+                        <li><strong>观察者模式：</strong><code>onChangeAppState</code> 状态变更通知订阅者</li>
+                        <li><strong>策略模式：</strong>不同工具实现相同接口，可互换执行</li>
+                        <li><strong>装饰器模式：</strong>权限包装器为工具添加访问控制</li>
+                        <li><strong>适配器模式：</strong>MCP/LSP 协议适配到统一工具接口</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">模式组合使用，而非孤立应用。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 项目中还有哪些设计模式？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 其他识别的模式：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>命令模式：</strong>每个斜杠命令封装为独立 Command 对象</li>
+                        <li><strong>代理模式：</strong>MCP 工具代理远程服务器调用</li>
+                        <li><strong>模板方法：</strong>工具基类定义执行骨架，子类实现细节</li>
+                        <li><strong>责任链：</strong>权限检查链：预批准 → 规则 → 用户确认</li>
+                        <li><strong>状态模式：</strong>Vim 模式状态机管理不同模式行为</li>
+                        <li><strong>迭代器模式：</strong>AsyncGenerator 实现流式数据遍历</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">理解模式有助于快速定位代码和预测行为。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

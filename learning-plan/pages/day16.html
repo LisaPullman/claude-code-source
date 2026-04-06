@@ -657,6 +657,36 @@ const loggedExposures = new Set<string>()
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何在隐私和可观测性之间平衡？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> Claude Code 的隐私保护策略：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>类型标记：</strong><code>AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS</code> 强制验证不含敏感数据</li>
+                        <li><strong>PII 隔离：</strong><code>_PROTO_*</code> 字段仅发送到特权后端，通用后端自动剥离</li>
+                        <li><strong>事件白名单：</strong><code>DATADOG_ALLOWED_EVENTS</code> 限制可上报的事件类型</li>
+                        <li><strong>禁用条件：</strong>测试环境、第三方云（Bedrock/Vertex）、隐私模式下禁用遥测</li>
+                        <li><strong>用户控制：</strong>通过 <code>privacyLevel</code> 设置控制遥测级别</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">设计原则：默认最小化收集，敏感数据需要显式标记和审计。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 特性开关如何实现灰度发布？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> GrowthBook 特性开关系统：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>用户属性：</strong>基于 <code>id</code>、<code>sessionId</code>、<code>organizationUUID</code> 等属性分流</li>
+                        <li><strong>远程评估：</strong>服务端计算特性值，客户端通过 API 获取</li>
+                        <li><strong>缓存策略：</strong>本地缓存特性值，启动时异步刷新</li>
+                        <li><strong>实验追踪：</strong>自动记录实验曝光事件用于 A/B 分析</li>
+                        <li><strong>回滚机制：</strong>通过 <code>feature('FLAG')</code> 编译时死代码消除</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">实现：<code>checkFeatureGate_CACHED_MAY_BE_STALE()</code> 提供快速本地读取。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

@@ -254,6 +254,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: BashTool 如何防止恶意命令执行？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多层安全防护机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>命令语义分析：</strong><code>commandSemantics.ts</code> 解析命令结构</li>
+                        <li><strong>破坏性命令检测：</strong><code>destructiveCommandWarning.ts</code> 识别 rm -rf 等</li>
+                        <li><strong>路径验证：</strong><code>pathValidation.ts</code> 限制操作目录</li>
+                        <li><strong>沙箱模式：</strong><code>shouldUseSandbox.ts</code> 在隔离环境执行</li>
+                        <li><strong>只读检测：</strong><code>readOnlyValidation.ts</code> 阻止写入敏感路径</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">用户可通过 <code>--dangerously-skip-permissions</code> 在沙箱环境中绕过。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 网络请求失败时的重试策略？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 指数退避重试机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>可重试错误：</strong>5xx 状态码、超时、网络断开</li>
+                        <li><strong>退避策略：</strong>初始 1s，指数增长，最大 60s</li>
+                        <li><strong>最大重试：</strong>默认 3 次，可配置</li>
+                        <li><strong>熔断机制：</strong>连续失败后暂停请求</li>
+                        <li><strong>用户通知：</strong>显示重试进度和预计等待时间</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码位置：<code>services/api/withRetry.ts</code> 的 <code>FallbackTriggeredError</code> 处理。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

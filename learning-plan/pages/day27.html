@@ -168,6 +168,39 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 能否画出完整请求生命周期时序图？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 请求生命周期：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>1. 用户输入：</strong>REPL 组件 → <code>handleUserMessage()</code></li>
+                        <li><strong>2. 消息构建：</strong><code>QueryEngine.addToConversation()</code> → 添加用户消息</li>
+                        <li><strong>3. API 请求：</strong><code>QueryEngine.runQueryLoop()</code> → <code>claude.ts</code> → <code>client.ts</code></li>
+                        <li><strong>4. 流式响应：</strong>API 返回 SSE 流 → <code>processStreamEvent()</code> 逐块处理</li>
+                        <li><strong>5. 工具调用：</strong><code>handleToolCall()</code> → 权限检查 → 执行工具</li>
+                        <li><strong>6. 结果返回：</strong>工具结果 → 下一轮 API 请求 → 循环直到完成</li>
+                        <li><strong>7. UI 更新：</strong>状态更新 → React 重渲染 → 终端输出</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">关键：<code>src/QueryEngine.ts</code> 协调整个流程。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 每个环节的关键模块是什么？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 各环节核心模块：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>输入处理：</strong><code>screens/REPL.tsx</code> + <code>components/BaseTextInput.tsx</code></li>
+                        <li><strong>消息管理：</strong><code>QueryEngine.ts</code> + <code>utils/messages.ts</code></li>
+                        <li><strong>API 通信：</strong><code>services/api/claude.ts</code> + <code>client.ts</code></li>
+                        <li><strong>流处理：</strong><code>services/api/streaming.ts</code>（如存在）</li>
+                        <li><strong>工具执行：</strong><code>Tool.ts</code> + <code>tools/*.ts</code></li>
+                        <li><strong>权限控制：</strong><code>utils/permissions/permissions.ts</code></li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">通过 Grep 搜索关键函数名可追踪详细调用链。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

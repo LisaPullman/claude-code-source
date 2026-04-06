@@ -167,6 +167,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 各服务之间依赖是否清晰？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 服务层依赖关系：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>API 层：</strong><code>client.ts</code> → <code>claude.ts</code> → <code>errors.ts</code> → <code>usage.ts</code></li>
+                        <li><strong>MCP 层：</strong><code>config.ts</code> → <code>client.ts</code> → <code>auth.ts</code></li>
+                        <li><strong>LSP 层：</strong><code>config.ts</code> → <code>LSPClient.ts</code> → <code>LSPServerManager.ts</code> → <code>LSPDiagnosticRegistry.ts</code></li>
+                        <li><strong>分析层：</strong><code>index.ts</code> → <code>sink.ts</code> → <code>datadog.ts</code> / <code>growthbook.ts</code></li>
+                        <li><strong>插件层：</strong><code>pluginLoader.ts</code> → <code>pluginOperations.ts</code> → <code>PluginInstallationManager.ts</code></li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">设计原则：单向依赖，避免循环，核心服务无外部依赖。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 能否追踪完整请求流程？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 请求全链路：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>1. 用户输入：</strong>REPL 接收 → 解析命令/消息</li>
+                        <li><strong>2. 消息处理：</strong><code>QueryEngine</code> 构建请求 → 添加系统提示词</li>
+                        <li><strong>3. API 调用：</strong><code>claude.ts</code> → <code>client.ts</code> → Anthropic API</li>
+                        <li><strong>4. 响应处理：</strong>流式解析 → 工具调用 → 权限检查</li>
+                        <li><strong>5. 结果输出：</strong>UI 渲染 → 成本累计 → 遥测上报</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">关键节点：<code>src/QueryEngine.ts</code> 的主循环协调所有服务。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

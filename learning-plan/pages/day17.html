@@ -506,6 +506,36 @@ function handlePluginCommandError(
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 插件系统如何保证向后兼容？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多层兼容性保障：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>版本化缓存：</strong><code>copyPluginToVersionedCache()</code> 按版本号存储插件</li>
+                        <li><strong>语义版本：</strong><code>calculatePluginVersion()</code> 计算插件内容哈希</li>
+                        <li><strong>依赖解析：</strong><code>dependencyResolver.ts</code> 检测插件间依赖冲突</li>
+                        <li><strong>作用域隔离：</strong><code>user/project/local/managed</code> 多级配置作用域</li>
+                        <li><strong>优雅降级：</strong>插件加载失败时不影响核心功能</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">插件更新时保留旧版本缓存，支持快速回滚。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 恶意插件的防护措施？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多层安全防护：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>市场白名单：</strong>仅允许从可信市场安装插件</li>
+                        <li><strong>策略阻止：</strong><code>isPluginBlockedByPolicy()</code> 检查企业策略</li>
+                        <li><strong>权限沙箱：</strong>插件只能访问声明的 MCP 资源</li>
+                        <li><strong>代码审计：</strong>manifest 声明所有能力，运行时强制执行</li>
+                        <li><strong>隔离执行：</strong>插件在独立进程/上下文中运行</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">企业可通过 <code>managed-settings.json</code> 控制插件策略。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

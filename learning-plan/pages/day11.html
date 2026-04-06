@@ -347,6 +347,36 @@ const workflowsCmd = feature('WORKFLOW_SCRIPTS')
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 命令和工具的使用场景有何不同？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 命令与工具的核心区别：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>触发方式：</strong>命令通过 <code>/command</code> 语法由用户显式调用；工具由 AI 自主决策调用</li>
+                        <li><strong>执行主体：</strong>命令是用户主动操作（如 <code>/clear</code>、<code>/config</code>）；工具是 AI 能力扩展（如 <code>Read</code>、<code>Bash</code>）</li>
+                        <li><strong>可见性：</strong>命令直接在 REPL 输入；工具调用隐藏在 AI 响应流程中</li>
+                        <li><strong>权限模型：</strong>命令通常无需权限确认；工具可能触发权限请求</li>
+                        <li><strong>设计目的：</strong>命令用于会话管理/配置；工具用于实际任务执行</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码位置：<code>src/commands.ts</code> 定义所有命令，<code>src/tools.ts</code> 定义所有工具。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何设计一个可扩展的命令系统？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> Claude Code 的命令扩展架构：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>目录结构：</strong>每个命令独立目录 <code>src/commands/{name}/index.ts</code></li>
+                        <li><strong>统一注册：</strong><code>src/commands.ts</code> 集中导入和注册所有命令</li>
+                        <li><strong>特性开关：</strong>使用 <code>feature('FLAG')</code> 实现条件编译，按需加载命令</li>
+                        <li><strong>命令接口：</strong>定义 <code>Command</code> 类型，包含 <code>name</code>、<code>description</code>、<code>execute</code> 等属性</li>
+                        <li><strong>插件支持：</strong>通过 <code>loadAllPluginsCacheOnly()</code> 加载插件提供的命令</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">扩展命令只需创建目录并注册，系统自动发现和加载。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

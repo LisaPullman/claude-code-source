@@ -569,6 +569,37 @@ export async function fetchUtilization(): Promise<Utilization | null> {
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何处理 API 限流？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多层限流处理机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>限流检测：</strong>解析 API 响应中的 <code>x-ratelimit-*</code> 头部</li>
+                        <li><strong>用量查询：</strong><code>fetchUtilization()</code> 获取 5 小时/7 天用量配额</li>
+                        <li><strong>降级提示：</strong>当配额耗尽时显示升级建议</li>
+                        <li><strong>重试策略：</strong>429 错误时指数退避重试，最大 3 次</li>
+                        <li><strong>用户通知：</strong>实时显示剩余配额和重置时间</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码位置：<code>src/services/api/usage.ts</code> 和 <code>src/services/claudeAiLimits.ts</code>。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 错误重试的退避策略是什么？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 指数退避重试机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>可重试错误：</strong>5xx 服务器错误、429 限流、超时、网络断开</li>
+                        <li><strong>初始延迟：</strong>1 秒</li>
+                        <li><strong>增长因子：</strong>每次重试延迟翻倍（1s → 2s → 4s）</li>
+                        <li><strong>最大延迟：</strong>60 秒</li>
+                        <li><strong>最大重试次数：</strong>3 次（可配置）</li>
+                        <li><strong>不可重试：</strong>4xx 客户端错误（除 429）、认证失败</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">实现：<code>src/services/api/withRetry.ts</code> 的 <code>withRetry()</code> 函数。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

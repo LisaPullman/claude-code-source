@@ -374,6 +374,35 @@ export type QueryChainTracking = {
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 工具权限系统如何保证安全性？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 权限系统采用多层防护：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>权限模式：</strong><code>PermissionMode</code> 支持 default/acceptEdits/bypassPermissions 等</li>
+                        <li><strong>规则匹配：</strong><code>alwaysAllowRules</code> / <code>alwaysDenyRules</code> / <code>alwaysAskRules</code></li>
+                        <li><strong>沙箱限制：</strong><code>additionalWorkingDirectories</code> 限制文件访问范围</li>
+                        <li><strong>用户确认：</strong>敏感操作弹出交互式确认对话框</li>
+                        <li><strong>拒绝追踪：</strong><code>DenialTrackingState</code> 记录用户拒绝，避免重复询问</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2"><code>--dangerously-skip-permissions</code> 仅在沙箱环境（Docker/无网络）中可用。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么工具加载要使用 memoize？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> memoize 优化工具加载的原因：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>避免重复实例化：</strong>工具对象创建涉及 schema 解析，开销较大</li>
+                        <li><strong>一致性保证：</strong>同一请求内工具列表不变，避免状态不一致</li>
+                        <li><strong>内存效率：</strong>共享工具实例，减少内存占用</li>
+                        <li><strong>缓存失效：</strong>通过 <code>refreshTools()</code> 在 MCP 连接变化时刷新</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码中使用 <code>memoizeWithLRU()</code> 提供 LRU 缓存，防止内存泄漏。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

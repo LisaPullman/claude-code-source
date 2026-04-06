@@ -374,6 +374,36 @@ const messageSelector =
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 查询引擎如何处理工具调用结果？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 工具调用结果的处理流程：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>结果收集：</strong><code>for await (const message of query())</code> 迭代消息流</li>
+                        <li><strong>类型分类：</strong>根据 <code>message.type</code> 分发到不同处理分支</li>
+                        <li><strong>权限检查：</strong><code>wrappedCanUseTool()</code> 包装器追踪拒绝记录</li>
+                        <li><strong>状态更新：</strong>通过 <code>setAppState()</code> 更新 UI 状态</li>
+                        <li><strong>持久化：</strong><code>recordTranscript()</code> 写入会话日志</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">关键设计：使用 AsyncGenerator 实现流式处理，避免内存爆炸。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 上下文窗口满时如何压缩？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 上下文压缩采用多级策略：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>自动检测：</strong><code>isAutoCompactEnabled()</code> 检查是否启用自动压缩</li>
+                        <li><strong>Token 计数：</strong><code>tokenCountWithEstimation()</code> 估算当前 token 数</li>
+                        <li><strong>压缩边界：</strong><code>createCompactBoundaryMessage()</code> 标记压缩点</li>
+                        <li><strong>摘要生成：</strong>调用 Claude 生成对话摘要替代历史消息</li>
+                        <li><strong>保留段：</strong><code>preservedSegment</code> 保护最近的重要消息不被压缩</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码位置：<code>services/compact/autoCompact.ts</code> 和 <code>services/compact/compact.ts</code>。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

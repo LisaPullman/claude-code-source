@@ -631,6 +631,34 @@ export function getActiveAgentForInput(
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么终端 UI 选择 React 而非其他方案？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 选择 React + Ink 框架的原因：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>声明式 UI：</strong>React 的组件模型使复杂交互状态易于推理</li>
+                        <li><strong>Ink 框架：</strong>专为终端设计的 React 渲染器，支持 Flexbox 布局</li>
+                        <li><strong>生态复用：</strong>可以复用 React 的 hooks、状态管理模式</li>
+                        <li><strong>主题系统：</strong><code>ThemeProvider</code> 提供统一的亮/暗主题支持</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">源码中 <code>ink.ts</code> 导出封装的 <code>render()</code> 和 <code>createRoot()</code>，自动包裹 <code>ThemeProvider</code>。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 不可变状态在 CLI 场景下的优势是什么？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 不可变状态模式的核心优势：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>可预测性：</strong><code>store.ts</code> 使用 <code>Object.is()</code> 检测变化，避免意外修改</li>
+                        <li><strong>时间旅行：</strong>状态快照便于实现撤销/重做功能</li>
+                        <li><strong>并发安全：</strong>不可变数据天然支持 React 的并发渲染</li>
+                        <li><strong>调试友好：</strong><code>onChange</code> 回调记录每次状态变化</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2"><code>AppStateStore.ts</code> 定义了 <code>DeepImmutable&lt;AppState&gt;</code> 类型，在类型层面强制不可变性。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

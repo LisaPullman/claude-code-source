@@ -167,6 +167,35 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 工具调用全链路是否理解？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 工具调用的完整链路：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>1. AI 决策：</strong>模型返回 <code>tool_use</code> 内容块，包含工具名和参数</li>
+                        <li><strong>2. 权限检查：</strong><code>hasPermissionsToUseTool()</code> 验证是否允许执行</li>
+                        <li><strong>3. 工具查找：</strong><code>findToolByName()</code> 在工具注册表中定位工具</li>
+                        <li><strong>4. 参数验证：</strong>Zod schema 验证输入参数合法性</li>
+                        <li><strong>5. 执行工具：</strong>调用 <code>tool.call()</code> 执行实际操作</li>
+                        <li><strong>6. 结果处理：</strong>将结果封装为 <code>tool_result</code> 返回模型</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">核心文件：<code>src/QueryEngine.ts</code> 的 <code>handleToolCall()</code> 方法。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 命令扩展机制是否清晰？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 命令扩展的三层机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>内置命令：</strong>直接在 <code>src/commands.ts</code> 中 import 注册</li>
+                        <li><strong>特性命令：</strong>通过 <code>feature('FLAG')</code> 条件加载，支持 A/B 测试</li>
+                        <li><strong>插件命令：</strong>通过 <code>MCP</code> 协议从外部服务器动态加载</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">命令系统采用分层设计：核心命令内置，高级功能通过插件扩展。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

@@ -167,6 +167,36 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么选择编译时而非运行时开关？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 编译时特性开关的优势：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>零运行时开销：</strong>未启用的特性代码被完全剔除，无分支判断成本</li>
+                        <li><strong>打包体积优化：</strong>Bun 的 <code>feature('FLAG')</code> 在编译时进行死代码消除</li>
+                        <li><strong>类型安全：</strong>TypeScript 可推断条件分支中的类型</li>
+                        <li><strong>防止泄漏：</strong>实验性代码不会出现在生产构建中</li>
+                        <li><strong>性能保证：</strong>关键路径无条件判断</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">代价：需要为不同特性组合构建多个变体。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 如何管理特性组合的测试？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 特性组合测试策略：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>默认组合：</strong>测试所有特性关闭的基线构建</li>
+                        <li><strong>独立测试：</strong>每个特性单独开启测试</li>
+                        <li><strong>核心组合：</strong>测试经常一起使用的特性组合</li>
+                        <li><strong>CI 矩阵：</strong>不同构建变体并行测试</li>
+                        <li><strong>集成测试：</strong>端到端测试覆盖主要使用场景</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">工具：CI 中配置多个构建目标，自动化测试各组合。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

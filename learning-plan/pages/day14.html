@@ -710,6 +710,36 @@ export async function startMCPServer(
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: MCP 协议解决了什么问题？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> MCP (Model Context Protocol) 解决的核心问题：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>标准化接口：</strong>统一的工具/资源/提示词 API，避免为每个 AI 应用单独集成</li>
+                        <li><strong>动态发现：</strong>运行时自动发现服务器提供的能力，无需硬编码</li>
+                        <li><strong>多传输支持：</strong>stdio、SSE、HTTP、WebSocket 等多种通信方式</li>
+                        <li><strong>安全隔离：</strong>每个 MCP 服务器独立进程，故障不影响主程序</li>
+                        <li><strong>生态复用：</strong>一次开发的 MCP 服务器可被任何支持 MCP 的客户端使用</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">本质是将 AI 能力扩展从"内置"变为"可插拔模块"。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 通道隔离如何保证安全性？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 多层安全隔离机制：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>进程隔离：</strong>每个 MCP 服务器作为独立子进程运行</li>
+                        <li><strong>权限沙箱：</strong>服务器只能访问用户明确授权的资源</li>
+                        <li><strong>OAuth 认证：</strong>支持标准 OAuth 2.0 流程保护敏感资源</li>
+                        <li><strong>作用域限制：</strong><code>ConfigScope</code> 区分 local/user/project 级别配置</li>
+                        <li><strong>环境变量隔离：</strong>每个服务器可配置独立的 <code>env</code> 变量</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">安全模型参考：<code>src/services/mcp/auth.ts</code> OAuth 实现。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

@@ -398,6 +398,36 @@ export function expandPastedTextRefs(
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 为什么需要两层状态管理？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 两层状态架构：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>bootstrap/state.ts：</strong>全局单例状态，存储会话级别数据（成本、模型、配置）</li>
+                        <li><strong>state/AppState.ts：</strong>React 响应式状态，驱动 UI 渲染更新</li>
+                        <li><strong>职责分离：</strong>bootstrap 状态是纯数据；AppState 是 UI 状态机</li>
+                        <li><strong>生命周期：</strong>bootstrap 状态在进程启动时初始化；AppState 随 React 组件挂载</li>
+                        <li><strong>持久化：</strong>bootstrap 状态可序列化保存；AppState 仅内存中存在</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">设计原则：全局状态谨慎添加，注释 "DO NOT ADD MORE STATE HERE"。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 状态变更如何触发 UI 更新？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> React 状态更新链路：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>状态更新：</strong><code>setAppState(prev => ({...prev, key: value}))</code></li>
+                        <li><strong>不可变更新：</strong>每次返回新对象，触发 React 浅比较</li>
+                        <li><strong>选择器优化：</strong><code>selectors.ts</code> 提供派生状态计算</li>
+                        <li><strong>订阅机制：</strong>组件通过 <code>useAppState()</code> hook 订阅状态切片</li>
+                        <li><strong>批量更新：</strong>React 自动合并同一事件循环中的多次更新</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">关键：<code>onChangeAppState()</code> 监听状态变化执行副作用。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

@@ -169,6 +169,38 @@
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 哪些实践可以应用到自己项目？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 可复用的最佳实践：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>不可变状态更新：</strong>使用 spread 和 immer 确保状态安全</li>
+                        <li><strong>类型品牌化：</strong><code>AnalyticsMetadata_I_VERIFIED_*</code> 强制代码审计</li>
+                        <li><strong>错误分类：</strong>区分可重试/不可重试错误，精确处理</li>
+                        <li><strong>懒加载：</strong>动态导入减少启动时间</li>
+                        <li><strong>配置分层：</strong>用户/项目/本地作用域隔离</li>
+                        <li><strong>清理注册：</strong><code>registerCleanup()</code> 统一管理资源释放</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">根据项目规模选择性采用，避免过度设计。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 项目中有哪些值得学习的编码风格？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 编码风格亮点：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>工厂函数优先：</strong>避免 class，使用闭包封装状态</li>
+                        <li><strong>类型即文档：</strong>复杂类型定义在 <code>types/</code> 目录集中管理</li>
+                        <li><strong>错误边界明确：</strong>每个异步操作都有 try-catch 和错误类型</li>
+                        <li><strong>命名语义化：</strong><code>getOrCreateUserID</code> 而非 <code>getUserID</code></li>
+                        <li><strong>注释适度：</strong>复杂逻辑有注释，简单代码自解释</li>
+                        <li><strong>Biome 格式化：</strong>统一代码风格，减少评审争议</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">风格一致性比完美更重要，团队约定优先。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>

@@ -416,6 +416,34 @@ export function showSetupDialog<T = void>(root: Root, renderer: (done: (result: 
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-md mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">💬 自问自答</h2>
+            <div class="space-y-6">
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: REPL 如何处理用户输入并路由到不同处理器？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 输入处理流程分为多个阶段：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>早期输入捕获：</strong><code>startCapturingEarlyInput()</code> 在模块加载期间就开始监听</li>
+                        <li><strong>斜杠命令识别：</strong><code>isSlashCommand()</code> 检测输入是否以 <code>/</code> 开头</li>
+                        <li><strong>命令分发：</strong>通过 <code>getCommands()</code> 获取注册的命令列表，按优先级匹配</li>
+                        <li><strong>消息队列：</strong><code>messageQueueManager</code> 管理待处理消息的优先级和去重</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">REPL 使用 Ink 框架渲染 UI，通过 React 组件树管理输入焦点和状态。</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <p class="font-medium text-green-800 mb-2">Q: 会话状态如何持久化？</p>
+                    <p class="text-gray-700 text-sm leading-relaxed"><strong>A:</strong> 会话持久化采用多层存储策略：</p>
+                    <ul class="text-gray-700 text-sm mt-2 space-y-1 ml-4 list-disc">
+                        <li><strong>会话存储：</strong><code>~/.claude/sessions/&lt;session-id&gt;/</code> 目录存储 JSONL 格式的对话记录</li>
+                        <li><strong>实时写入：</strong><code>recordTranscript()</code> 在每条消息后追加写入</li>
+                        <li><strong>惰性刷新：</strong><code>flushSessionStorage()</code> 批量刷新，减少 I/O 次数</li>
+                        <li><strong>恢复机制：</strong><code>--resume</code> 从最近会话文件恢复状态</li>
+                    </ul>
+                    <p class="text-gray-600 text-sm mt-2">关键设计：用户消息在 API 调用前就写入磁盘，确保即使进程崩溃也能恢复。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📝 学习笔记模板</h2>
             <div class="bg-gray-50 p-4 rounded-lg text-gray-600 space-y-3">
                 <p><strong>今日目标完成情况：</strong></p>
